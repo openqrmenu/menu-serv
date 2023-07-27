@@ -5,6 +5,7 @@ import { isAuthenticated } from "../config/passport";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { UserDataStore, UserObject } from "../models/user";
+import { Status } from "../models/status";
 
 const router = express.Router();
 
@@ -43,13 +44,32 @@ const router = express.Router();
  *         description: Redirect.
  */
 
-router.post("/login/password",  passport.authenticate("local"),
+/*
+router.post("/login/password",  passport.authenticate("local", (err, user, info) => {
+      console.log("Cb fired " + JSON.stringify(info));
+    }),
         function(req, res) {
           res.status(200).json(
             {
             "authenticated": true 
             }
           );
+});
+*/
+
+router.post("/login/password", function(req, res, next) {
+  passport.authenticate("local", function(err, user, info) {
+    if (err) { return next(err); }
+    if (!user) { return res.status(401).json(
+      new Status(false,info.message)
+      ); }
+
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      return res.status(200).json(
+        new Status(true) );
+    });
+  })(req, res, next);
 });
 
 router.get("/checkauth", isAuthenticated, function(req, res){
@@ -63,9 +83,7 @@ router.get("/getstatus", function (req, res)
 {
   const isAuth = req.isAuthenticated();
   res.status(200).json(
-    {
-    "authenticated": isAuth 
-    }
+    new Status(isAuth) 
   );
 });
 
@@ -77,9 +95,7 @@ router.get("/getstatus", function (req, res)
 router.post("/logout", function(req: Request, res: Response, next: NextFunction) {
     req.session.destroy(function (err) {
     res.status(200).clearCookie("connect.sid").json(
-      {
-        "authenticated": false
-      }
+      new Status(false) 
     );
   });
   });
@@ -97,17 +113,24 @@ router.post("/signup", async function (req, res, next) {
   const email = req.body.email;
   const password = req.body.password;
   const hashedpassword = bcrypt.hashSync(password, 10);
-
   const user = new UserObject({
     name: email,
     hash_password: hashedpassword,
   });
-  const uds: UserDataStore = new UserDataStore();
-  await uds.add(user);
+  
 
-  res.status(200).json({
-    status: "ok",
-  });
+  const uds: UserDataStore = new UserDataStore();
+  const existinguser: UserObject = await uds.findByName(email);
+  if (existinguser === null)
+  {
+    await uds.add(user);
+
+    return res.status(200).json(new Status(true,""));
+  }
+
+  return res.status(200).json(
+    new Status(false,"Account creation failed, email already exists"));
+
 });
 
 export default router;

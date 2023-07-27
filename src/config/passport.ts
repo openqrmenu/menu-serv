@@ -23,6 +23,9 @@ passport.use(
   new LocalStrategy({usernameField: "email", passwordField: "password"}, async function verify(username, password, cb) {
     const uds: UserDataStore = new UserDataStore();
     const user: UserObject = await uds.findByName(username);
+    if (user === null)
+      return cb(null, false, { message: "Incorrect username or password" });
+
     if (bcrypt.compareSync(password, user.hash_password)) {
       return cb(null, { id: user._id, username: username });
     }

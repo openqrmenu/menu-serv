@@ -40,6 +40,8 @@ export class UserDataStore {
     const query = { name: aname };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
+    if (obj === null)
+      return null;
     const user = new UserObject(obj);
     return user;
   }
