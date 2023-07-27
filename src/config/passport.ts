@@ -20,7 +20,7 @@ import bcrypt from "bcrypt";
  */
 const LocalStrategy = passportLocal.Strategy;
 passport.use(
-  new LocalStrategy(async function verify(username, password, cb) {
+  new LocalStrategy({usernameField: "email", passwordField: "password"}, async function verify(username, password, cb) {
     const uds: UserDataStore = new UserDataStore();
     const user: UserObject = await uds.findByName(username);
     if (bcrypt.compareSync(password, user.hash_password)) {

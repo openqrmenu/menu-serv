@@ -75,12 +75,7 @@ router.get("/getstatus", function (req, res)
  * This route logs the user out.
  */
 router.post("/logout", function(req: Request, res: Response, next: NextFunction) {
-  //req.logOut();
-  req.session.destroy(function (err) {
-    //res.clearCookie("connect.sid", {
-      //path: "/", 
-
-    //});
+    req.session.destroy(function (err) {
     res.status(200).clearCookie("connect.sid").json(
       {
         "authenticated": false
@@ -99,12 +94,12 @@ router.post("/logout", function(req: Request, res: Response, next: NextFunction)
  * successfully created, the user is logged in.
  */
 router.post("/signup", async function (req, res, next) {
-  const username = req.body.username;
+  const email = req.body.email;
   const password = req.body.password;
   const hashedpassword = bcrypt.hashSync(password, 10);
 
   const user = new UserObject({
-    name: username,
+    name: email,
     hash_password: hashedpassword,
   });
   const uds: UserDataStore = new UserDataStore();
