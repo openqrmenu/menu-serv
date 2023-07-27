@@ -7,9 +7,10 @@ import passport from "passport";
 import morgan from "morgan";
 import createMemoryStore from "memorystore";
 import MongoStore from "connect-mongo";
+import cors from "cors";
 
 import cookieparser from "cookie-parser";
-import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME } from "./util/secrets";
+import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME, ISPRODUCTION } from "./util/secrets";
 import logger from "./util/logger";
 
 import DBStore from "./util/db/db";
@@ -54,14 +55,24 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     secret: SESSION_SECRET,
+    cookie : {
+    },
     store:  MongoStore.create( { mongoUrl: MONGODB_URI, dbName: MONGODB_DB_NAME}  )
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+if (!ISPRODUCTION) // UI Development mode
+{
+  app.use(cors({
+    credentials: true,
+    origin: ["http://localhost:4000"] // 
+  }));
+  }
+
 // LUSCA options
-app.use(lusca.xframe("SAMEORIGIN"));
-app.use(lusca.xssProtection(true));
+//app.use(lusca.xframe("SAMEORIGIN"));
+//app.use(lusca.xssProtection(true));
 app.use((req, res, next) => {
     res.locals.user = req.user;
     next();

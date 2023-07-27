@@ -10,10 +10,10 @@ if (fs.existsSync(".env")) {
     dotenv.config({ path: ".env.example" });  // you can delete this after you create your own .env file!
 }
 export const ENVIRONMENT = process.env.NODE_ENV;
-const prod = ENVIRONMENT === "production"; // Anything else is treated as 'dev'
+export const ISPRODUCTION = ENVIRONMENT === "production"; // Anything else is treated as 'dev'
 
 export const SESSION_SECRET = process.env["SESSION_SECRET"];
-export const MONGODB_URI = prod ? process.env["MONGODB_URI"] : process.env["MONGODB_URI_LOCAL"];
+export const MONGODB_URI = ISPRODUCTION ? process.env["MONGODB_URI"] : process.env["MONGODB_URI_LOCAL"];
 
 export const MONGODB_DB_NAME = process.env["MONGODB_DB_NAME"];
 
@@ -23,7 +23,7 @@ if (!SESSION_SECRET) {
 }
 
 if (!MONGODB_URI) {
-    if (prod) {
+    if (ISPRODUCTION) {
         logger.error("No mongo connection string. Set MONGODB_URI environment variable.");
     } else {
         logger.error("No mongo connection string. Set MONGODB_URI_LOCAL environment variable.");

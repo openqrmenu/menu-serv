@@ -45,7 +45,11 @@ const router = express.Router();
 
 router.post("/login/password",  passport.authenticate("local"),
         function(req, res) {
-            res.redirect("/");
+          res.status(200).json(
+            {
+            "authenticated": true 
+            }
+          );
 });
 
 router.get("/checkauth", isAuthenticated, function(req, res){
@@ -55,14 +59,35 @@ router.get("/checkauth", isAuthenticated, function(req, res){
     });
 });
 
+router.get("/getstatus", function (req, res)
+{
+  const isAuth = req.isAuthenticated();
+  res.status(200).json(
+    {
+    "authenticated": isAuth 
+    }
+  );
+});
+
   
 /* POST /logout
  *
  * This route logs the user out.
  */
 router.post("/logout", function(req: Request, res: Response, next: NextFunction) {
-  req.logout();
-});
+  //req.logOut();
+  req.session.destroy(function (err) {
+    //res.clearCookie("connect.sid", {
+      //path: "/", 
+
+    //});
+    res.status(200).clearCookie("connect.sid").json(
+      {
+        "authenticated": false
+      }
+    );
+  });
+  });
 
 /* POST /signup
  *
@@ -73,23 +98,21 @@ router.post("/logout", function(req: Request, res: Response, next: NextFunction)
  * then a new user record is inserted into the database.  If the record is
  * successfully created, the user is logged in.
  */
-router.post("/signup", async function(req, res, next) {
-
+router.post("/signup", async function (req, res, next) {
   const username = req.body.username;
   const password = req.body.password;
-  const hashedpassword = bcrypt.hashSync( password, 10 );
+  const hashedpassword = bcrypt.hashSync(password, 10);
 
   const user = new UserObject({
     name: username,
-    hash_password: hashedpassword
+    hash_password: hashedpassword,
   });
-  const uds:UserDataStore = new UserDataStore();
+  const uds: UserDataStore = new UserDataStore();
   await uds.add(user);
 
   res.status(200).json({
-    status: "ok"
+    status: "ok",
   });
-
 });
 
 export default router;
