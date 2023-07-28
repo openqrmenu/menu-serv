@@ -17,6 +17,7 @@ import DBStore from "./util/db/db";
 
 import indexRouter from "./routes/index";
 import authRouter from "./routes/auth";
+import menuCardRouter from "./routes/menucard";
 
 /*
 process.on("uncaughtException", function (exception) {
@@ -101,5 +102,6 @@ app.use(function(err, req, res, next) {
 // ROUTE HANDLERS
 //app.use("/", indexRouter);
 app.use("/auth", authRouter);
+app.use("/menucard", menuCardRouter);
 
 export default app;
