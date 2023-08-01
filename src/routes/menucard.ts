@@ -106,6 +106,33 @@ router.get("/get/:id", isAuthenticated, async function(req, res){
   const mcds: MenuCardDataStore = new MenuCardDataStore();
   const existingmc: MenuCardObject = await mcds.findByUserId(myuser.id, id);
 
+  const mids: MenuItemDataStore = new MenuItemDataStore();
+  const menuitems = await mids.getMenuItems(myuser.id, id);
+  //console.log(menuitems);
+
+  const cats = menuitems.filter(item => {
+    if (item.type == "category")
+      return true;
+    return false;
+  });
+  const menucats: MenuCategoryObject[] = [];
+  cats.forEach(item => {
+    const subitems = menuitems.filter(mitem => {
+        if (mitem.type != "category" && mitem.parentid == item._id)
+        {
+          return true;
+        }
+
+        return false;
+    });
+
+    const menuCategory: MenuCategoryObject =  MenuCategoryObject.createNew(item,subitems);
+    menucats.push(menuCategory);
+  });
+
+  
+  existingmc["items"] = menucats;
+/*
   // Sample Category
   const categoryDetail = [ MenuItemLanguageEntry.createNew("en", "Appetizers") ];
   const category = MenuItem.createNew(categoryDetail, new ObjectId("64c2c45ffbe4a246d54ab752"), "category");
@@ -124,6 +151,7 @@ router.get("/get/:id", isAuthenticated, async function(req, res){
 
   // Insert into Menu card
   existingmc["items"] = [ menuCategory ];
+  */
 
   res.status(200).json(existingmc);
 }

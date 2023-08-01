@@ -135,28 +135,30 @@ export class MenuItemDataStore {
             logger.debug("No documents found to delete");
         } finally {
         }
-      } 
+      }
+      
 
-    /*
-  async findAll(auserid: ObjectId, amenucardid: ObjectId): Promise<Array<MenuItem>>
+
+  async getMenuItems(auserid: ObjectId, amenucardid: ObjectId): Promise<Array<MenuItem>>
   {
     const query = { userid: new ObjectId(auserid), menucardid:  new ObjectId(amenucardid) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     console.log(query);
     const cursor = await dbcoll.getCollection().find(query);
-    const menucards: MenuCardObject[] = [];
+    const menuitems: MenuItem[] = [];
     let obj;
     while (await cursor.hasNext())
     {
       obj = await cursor.next();
       
-      const menucard = new MenuCardObject(obj);  
-      menucards.push(menucard);
+      const menuitem = new MenuItem(obj);  
+      menuitems.push(menuitem);
 
     }
-    return menucards;
+    return menuitems;
   }
 
+  /*
   async findById(id: ObjectId): Promise<MenuCardObject>
   {
     const query = { _id: id };
