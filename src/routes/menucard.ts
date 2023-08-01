@@ -92,8 +92,6 @@ router.post("/removelanguage", async function (req, res, next) {
   return res.status(200).json(new Status(true, ""));
 });
 
-
-
 router.get("/get/:id", isAuthenticated, async function(req, res){
 
   const myuser: User = req.user as User;
