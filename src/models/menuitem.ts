@@ -150,34 +150,19 @@ export class MenuItemDataStore {
     while (await cursor.hasNext())
     {
       obj = await cursor.next();
-      
       const menuitem = new MenuItem(obj);  
       menuitems.push(menuitem);
-
     }
     return menuitems;
   }
-
-  /*
-  async findById(id: ObjectId): Promise<MenuCardObject>
-  {
-    const query = { _id: id };
-    const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-    const obj = await dbcoll.getCollection().findOne(query);
-    const menucard = new MenuCardObject(obj);
-    logger.debug(menucard);
-    return menucard;
-  }
-
-
-
-    async update(menucard: MenuCardObject): Promise<any> {
+  
+    async updateMenuItem(menuItem: MenuItem): Promise<any> {
     try {
-      const query = { _id: menucard._id };
+      const query = { _id: menuItem._id, userid: new ObjectId(menuItem.userid) };
       const options = { upsert: true };
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-      delete menucard._id;
-      const updateDoc = { $set: menucard};
+      delete menuItem._id;
+      const updateDoc = { $set: menuItem};
       const result = await dbcoll.getCollection().updateOne(query, updateDoc, options);
       if (result.modifiedCount > 0)
         logger.debug("A document was updated with the _id");
@@ -186,9 +171,6 @@ export class MenuItemDataStore {
     } finally {
     }
   }
-
-
-*/  
 }
 
 

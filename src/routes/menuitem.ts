@@ -33,6 +33,26 @@ router.post("/add", isAuthenticated, async function (req, res)
 }
 );
 
+router.post("/update", isAuthenticated, async function (req, res)
+{
+  const myuser: User = req.user as User;
+  const userid = new ObjectId(myuser.id);
+
+  console.log(req.body);
+  const menuItem = new MenuItem(req.body);
+  menuItem.userid = new ObjectId(userid);
+  menuItem._id = new ObjectId(menuItem._id as string);
+
+  const mids: MenuItemDataStore = new MenuItemDataStore();
+
+  mids.updateMenuItem(menuItem);
+  console.log(menuItem);
+  res.status(200).json(new Status(true));
+  
+  
+}
+);
+
 router.post("/delete", async function (req, res, next) {
   const id = new ObjectId(req.body.id);
   const myuser: User = req.user as User;
