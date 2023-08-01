@@ -3,11 +3,22 @@ import { DBCollection } from "../util/db/dbcollection";
 import { MONGODB_DB_NAME } from "../util/secrets";
 import logger from "../util/logger";
 
+export class MenuLanguage {
+  code: string;
+  name: string;
+
+  constructor(code: string, name: string)
+  {
+    this.code = code;
+    this.name = name;
+  }
+
+}
+
 export class MenuCardObject {
   [prop: string]: unknown; // Prevent Weak Type errors https://mariusschulz.com/blog/weak-type-detection-in-typescript
 
   name: string;
-
   description: string;
   updated: Date;
 
@@ -16,6 +27,8 @@ export class MenuCardObject {
   views: number;
 
   userid: ObjectId;
+
+  languages: MenuLanguage[];
   constructor(source: Partial<MenuCardObject>)
   {
     Object.assign(this, source);
@@ -23,11 +36,15 @@ export class MenuCardObject {
 
   public static createNew(name: string, description: string, userid: ObjectId) : MenuCardObject
   {
+    const english = new MenuLanguage("en", "English");
+    const langs: MenuLanguage[] = [ english ];
     return new MenuCardObject({
       name: name,
       description: description,
       updated: new Date(),
-      userid: userid
+      userid: userid,
+      views: 0,
+      languages: langs
     });
   }
 }
@@ -64,6 +81,16 @@ export class MenuCardDataStore {
 
     }
     return menucards;
+  }
+
+  async findByUserId(userid: ObjectId, id: ObjectId): Promise<MenuCardObject>
+  {
+    const query = { userid: new ObjectId(userid), _id: new ObjectId(id) };
+    const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+    const obj = await dbcoll.getCollection().findOne(query);
+    const menucard = new MenuCardObject(obj);
+    logger.debug(menucard);
+    return menucard;
   }
 
   async findById(id: ObjectId): Promise<MenuCardObject>
