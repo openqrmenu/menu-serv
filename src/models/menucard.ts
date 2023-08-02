@@ -28,6 +28,9 @@ export class MenuCardObject {
 
   userid: ObjectId;
 
+  currency: string;
+  currencysymbol: string;
+
   languages: MenuLanguage[];
   constructor(source: Partial<MenuCardObject>)
   {
@@ -44,7 +47,9 @@ export class MenuCardObject {
       updated: new Date(),
       userid: userid,
       views: 0,
-      languages: langs
+      languages: langs,
+      currencysymbol : "",
+      currency : ""
     });
   }
 }
@@ -121,9 +126,11 @@ export class MenuCardDataStore {
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       delete menucard._id;
       const updateDoc = { $set: menucard};
+      console.log(query);
+      console.log(updateDoc);
       const result = await dbcoll.getCollection().updateOne(query, updateDoc, options);
       if (result.modifiedCount > 0)
-        logger.debug("A document was updated with the _id");
+        logger.debug("A document was updated with the _id ");
       else
         logger.debug("No document found for update");
     } finally {

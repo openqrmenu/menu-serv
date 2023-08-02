@@ -23,18 +23,14 @@ router.get("/getall", isAuthenticated, async function(req, res){
 
 
 router.post("/add", async function (req, res, next) {
-  const name = req.body.name;
-  let description = req.body.description;
-  if (description === undefined)
-  {
-    description = "";
-  }
+  const menucard = new MenuCardObject(req.body);
   const myuser: User = req.user as User;
-  console.log(req.user);
-  const menucard = MenuCardObject.createNew(name, description, new ObjectId(myuser.id));
+  menucard.userid = new ObjectId(myuser.id);
+  menucard.updated = new Date();
+  
   
   const mcds: MenuCardDataStore = new MenuCardDataStore();
-  const existingmc: MenuCardObject = await mcds.findByName(name);
+  const existingmc: MenuCardObject = await mcds.findByName(menucard.name);
   if (existingmc === null)
   {
     const upmenucard = await mcds.add(menucard);
@@ -45,6 +41,24 @@ router.post("/add", async function (req, res, next) {
     new Status(false,"Menu card already exists"));
 
 });
+
+router.post("/update", isAuthenticated, async function (req, res)
+{
+  const myuser: User = req.user as User;
+  const userid = new ObjectId(myuser.id);
+
+  console.log(req.body);
+  const menucard = new MenuCardObject(req.body);
+  menucard.userid = new ObjectId(myuser.id);
+  menucard.updated = new Date();
+  menucard._id = new ObjectId(menucard._id as string); // convert JSON string to objectId
+
+  const mcds: MenuCardDataStore = new MenuCardDataStore();
+
+  mcds.update(menucard);
+  res.status(200).json(new Status(true, ""));
+}
+);
 
 router.post("/delete", async function (req, res, next) {
   const id = new ObjectId(req.body.id);

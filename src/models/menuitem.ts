@@ -60,10 +60,10 @@ export class MenuItem{
     type: string;
 
     price: number;
-    currency: string;
-    currencysymbol: string;
+
     otherprice: MenuOtherPriceEntry[]    
 
+    
     constructor(source: Partial<MenuItem>)
     {
       Object.assign(this, source);
@@ -72,16 +72,13 @@ export class MenuItem{
     }
   
     public static createNew(details: MenuItemLanguageEntry[], userid: ObjectId, type: string, 
-        price: number = 0, currency: string = "", currencysymbol: string = "", otherprice: MenuOtherPriceEntry[] = []) : MenuItem
+        price: number = 0) : MenuItem
     {
       return new MenuItem({
        details: details,
         userid: userid,
         type: type,
-        price: price,
-        currency: currency,
-        currencysymbol: currencysymbol,
-        otherprice: otherprice
+        price: price
       });
     }
     
@@ -155,7 +152,7 @@ export class MenuItemDataStore {
     }
     return menuitems;
   }
-  
+
     async updateMenuItem(menuItem: MenuItem): Promise<any> {
     try {
       const query = { _id: menuItem._id, userid: new ObjectId(menuItem.userid) };
