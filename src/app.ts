@@ -19,6 +19,7 @@ import indexRouter from "./routes/index";
 import authRouter from "./routes/auth";
 import menuCardRouter from "./routes/menucard";
 import menuItemRouter from "./routes/menuitem";
+import publicRouter from "./routes/public";
 /*
 process.on("uncaughtException", function (exception) {
   logger.error(exception); 
@@ -104,5 +105,6 @@ app.use(function(err, req, res, next) {
 app.use("/auth", authRouter);
 app.use("/menucard", menuCardRouter);
 app.use("/menuitem", menuItemRouter);
+app.use("/public", publicRouter);
 
 export default app;
