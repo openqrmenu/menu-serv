@@ -1,0 +1,1 @@
+Test Google Login : http://goqrmenu.com:3000/auth/login/google

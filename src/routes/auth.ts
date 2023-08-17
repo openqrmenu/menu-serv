@@ -6,6 +6,9 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { UserDataStore, UserObject } from "../models/user";
 import { Status } from "../models/status";
+import jwt from "jsonwebtoken";
+
+import { OTP_JWT_SECRET } from "../util/secrets";
 
 const router = express.Router();
 
@@ -72,12 +75,67 @@ router.post("/login/password", function(req, res, next) {
   })(req, res, next);
 });
 
+router.get("/login/google", passport.authenticate("google", {
+  scope: ["email", "profile"],
+}));
+
+router.post("/login/token", function(req, res, next) {
+      const token = req.body.token;
+      jwt.verify(token, OTP_JWT_SECRET, async function (err: any, decoded: any)
+      {
+        if (err)
+        {
+          console.log(err);
+          return res.redirect("http://localhost:4000");
+        }
+        console.log(decoded);
+
+        const uds: UserDataStore = new UserDataStore();
+        const user: UserObject = await uds.findById(decoded.data);
+        if (user === null)
+        {
+          console.log("Cannot Find User ");  
+          return res.redirect("http://localhost:4000");
+        }
+
+        console.log("Found User:");
+        console.log(user);  
+        req.logIn(user, function(err) {
+          if (err) { return next(err); }
+          return res.status(200).json(
+            new Status(true) );
+        });
+      
+      });
+);
+
+
 router.get("/checkauth", isAuthenticated, function(req, res){
 
     res.status(200).json({
         status: "Login successful!"
     });
 });
+
+router.get("/redirect/google", function(req, res, next) {
+  passport.authenticate("google", function(err, user, info) {
+    if (err) { return next(err); }
+    if (!user) {
+      return res.redirect("http://localhost:3000");
+    }
+
+    const payload =  { exp: Math.floor(Date.now() / 1000) + (60 * 60), data: user._id};
+    console.log(payload);
+    // Generate JWT token
+    const token = jwt.sign(
+     payload, OTP_JWT_SECRET);
+
+    res.redirect("http://localhost:4000/#/oauthlogin?token=" + token);
+
+    
+  })(req, res, next);
+});
+
 
 router.get("/getstatus", function (req, res)
 {
@@ -86,7 +144,6 @@ router.get("/getstatus", function (req, res)
     new Status(isAuth) 
   );
 });
-
   
 /* POST /logout
  *
@@ -114,13 +171,13 @@ router.post("/signup", async function (req, res, next) {
   const password = req.body.password;
   const hashedpassword = bcrypt.hashSync(password, 10);
   const user = new UserObject({
-    name: email,
+    email: email,
     hash_password: hashedpassword,
   });
   
 
   const uds: UserDataStore = new UserDataStore();
-  const existinguser: UserObject = await uds.findByName(email);
+  const existinguser: UserObject = await uds.findByEmail(email);
   if (existinguser === null)
   {
     await uds.add(user);

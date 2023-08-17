@@ -48,11 +48,9 @@ router.post("/update", isAuthenticated, async function (req, res)
   mids.updateMenuItem(menuItem);
   console.log(menuItem);
   res.status(200).json(new Status(true));
-  
-  
+   
 }
 );
-
 router.post("/delete", async function (req, res, next) {
   const id = new ObjectId(req.body.id);
   const myuser: User = req.user as User;
@@ -60,6 +58,7 @@ router.post("/delete", async function (req, res, next) {
   
   const mids: MenuItemDataStore = new MenuItemDataStore();
   await mids.deleteById(id, userid);
+  await mids.deleteByParentId(req.body.id, userid);
   return res.status(200).json(new Status(true, ""));
 });
 

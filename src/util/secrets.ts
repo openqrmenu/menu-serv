@@ -30,3 +30,9 @@ if (!MONGODB_URI) {
     }
     process.exit(1);
 }
+
+export const GOOGLE_CLIENT_ID = process.env["GOOGLE_CLIENT_ID"];
+
+export const GOOGLE_CLIENT_SECRET = process.env["GOOGLE_CLIENT_SECRET"];
+
+export const OTP_JWT_SECRET = process.env["OTP_JWT_SECRET"];

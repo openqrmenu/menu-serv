@@ -1,5 +1,8 @@
 import passport from "passport";
 import passportLocal from "passport-local";
+import passportGoogle from "passport-google-oauth20";
+
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../util/secrets";
 
 
 import { Request, Response, NextFunction } from "express";
@@ -20,19 +23,49 @@ import bcrypt from "bcrypt";
  */
 const LocalStrategy = passportLocal.Strategy;
 passport.use(
-  new LocalStrategy({usernameField: "email", passwordField: "password"}, async function verify(username, password, cb) {
+  new LocalStrategy({usernameField: "email", passwordField: "password"}, async function verify(email, password, cb) {
     const uds: UserDataStore = new UserDataStore();
-    const user: UserObject = await uds.findByName(username);
+    const user: UserObject = await uds.findByEmail(email);
     if (user === null)
       return cb(null, false, { message: "Incorrect username or password" });
 
     if (bcrypt.compareSync(password, user.hash_password)) {
-      return cb(null, { id: user._id, username: username });
+      return cb(null, user);
     }
 
     return cb(null, false, { message: "Incorrect username or password" });
   })
 );
+
+const GoogleStrategy = passportGoogle.Strategy;
+passport.use(new GoogleStrategy({
+  clientID: GOOGLE_CLIENT_ID,
+  clientSecret: GOOGLE_CLIENT_SECRET,
+  callbackURL: "http://goqrmenu.com:3000/auth/redirect/google",
+  scope: [ "profile" ],
+  state: true
+},
+async function(accessToken, refreshToken, profile, cb) {
+    // get profile details
+    // save profile details in db
+    console.log(profile);
+    const uds: UserDataStore = new UserDataStore();
+    const user: UserObject = await uds.findByGoogleID(profile.id);
+    if (user === null)
+    {
+      // User doesn't exist, create a new one
+      const user = new UserObject({
+        email: profile.emails?.[0].value,
+        googleID: profile.id,
+      });
+      
+      await uds.add(user);
+      return cb(null, user);
+    }
+
+    // Found existing user, return found user
+    return cb(null, user);
+}));
 
 
 /* Configure session management.
@@ -55,8 +88,9 @@ passport.serializeUser(function (
   user: any,
   cb: CallableFunction
 ) {
+  console.log(user);
   process.nextTick(function () {
-    cb(null, { id: user.id, username: user.username });
+    cb(null, { id: user._id });
   });
 });
 
@@ -74,5 +108,5 @@ export const isAuthenticated = (
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/");
+  res.redirect("http://127.0.0.1:3000");
 };

@@ -10,7 +10,7 @@ import MongoStore from "connect-mongo";
 import cors from "cors";
 
 import cookieparser from "cookie-parser";
-import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME, ISPRODUCTION } from "./util/secrets";
+import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME, ISPRODUCTION, OTP_JWT_SECRET } from "./util/secrets";
 import logger from "./util/logger";
 
 import DBStore from "./util/db/db";
@@ -25,6 +25,8 @@ process.on("uncaughtException", function (exception) {
   logger.error(exception); 
 });
 */
+
+console.log(OTP_JWT_SECRET);
 
 // Create Express server
 const app = express();

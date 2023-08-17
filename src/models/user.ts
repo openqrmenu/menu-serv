@@ -6,7 +6,11 @@ import logger from "../util/logger";
 export class UserObject {
   [prop: string]: unknown; // Prevent Weak Type errors https://mariusschulz.com/blog/weak-type-detection-in-typescript
 
-  name: string;
+  type: string;
+  email: string;
+
+  googleID: string;
+  
   hash_password: string;
 constructor(source: Partial<UserObject>)
   {
@@ -28,16 +32,27 @@ export class UserDataStore {
 
     this.deleteById(new ObjectId("64ba9f5f9fbc0cdb5c0a4c17"));
 
-    const myuser = await this.findByName("joking");
+    const myuser = await this.findByEmail("joking");
     logger.debug(myuser);
 
     myuser.type = "bad134" + Math.random();
     await this.update(myuser);
   }
 
-  async findByName(aname: string): Promise<UserObject>
+  async findByEmail(email: string): Promise<UserObject>
   {
-    const query = { name: aname };
+    const query = { email: email };
+    const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+    const obj = await dbcoll.getCollection().findOne(query);
+    if (obj === null)
+      return null;
+    const user = new UserObject(obj);
+    return user;
+  }
+
+  async findByGoogleID(googleID: string): Promise<UserObject>
+  {
+    const query = { googleID: googleID };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
     if (obj === null)
@@ -48,7 +63,7 @@ export class UserDataStore {
 
   async findById(id: ObjectId): Promise<UserObject>
   {
-    const query = { _id: id };
+    const query = { _id: new ObjectId(id) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
     const user = new UserObject(obj);
