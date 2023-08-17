@@ -107,7 +107,7 @@ router.post("/login/token", function(req, res, next) {
         });
       
       });
-);
+    });
 
 
 router.get("/checkauth", isAuthenticated, function(req, res){
