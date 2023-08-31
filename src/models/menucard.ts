@@ -32,6 +32,7 @@ export class MenuCardObject {
   currencysymbol: string;
 
   languages: MenuLanguage[];
+
   constructor(source: Partial<MenuCardObject>)
   {
     Object.assign(this, source);
@@ -137,7 +138,7 @@ export class MenuCardDataStore {
     }
   }
 
-  async deleteById(id: ObjectId, userid: ObjectId): Promise<void> {
+    async deleteById(id: ObjectId, userid: ObjectId): Promise<void> {
     try {
       const query = { _id: new ObjectId(id), userid: new ObjectId(userid) };
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);

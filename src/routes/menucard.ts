@@ -57,8 +57,49 @@ router.post("/update", isAuthenticated, async function (req, res)
 
   mcds.update(menucard);
   res.status(200).json(new Status(true, ""));
-}
-);
+});
+
+router.post("/updatednd", isAuthenticated, async function (req, res)
+{
+  const myuser: User = req.user as User;
+  const userid = new ObjectId(myuser.id);
+
+  const menucard = new MenuCardObject(req.body);
+  menucard.userid = new ObjectId(myuser.id);
+  menucard.updated = new Date();
+  menucard._id = new ObjectId(menucard._id as string); // convert JSON string to objectId
+
+  // Add the ordering info
+  const mids: MenuItemDataStore = new MenuItemDataStore();
+
+
+  const menucats = menucard["items"];
+  let order = 0;
+  menucats.forEach(item => {
+    item["category"].order = order;
+    order++;
+
+    const catItem = new MenuItem(item["category"]);
+    catItem._id = new ObjectId(catItem._id as string);
+    catItem.userid = new ObjectId(userid);
+    mids.updateMenuItem(catItem);
+    
+    const items = item["menuitems"];
+    items.forEach(subitem => {
+      subitem.order = order;
+      order++;
+
+      const subMenuItem = new MenuItem(subitem);
+      subMenuItem._id = new ObjectId(subMenuItem._id as string);
+      subMenuItem.userid = new ObjectId(userid);
+      mids.updateMenuItem(subMenuItem);
+    });
+  });
+
+  
+  res.status(200).json(new Status(true, ""));
+});
+
 
 router.post("/delete", async function (req, res, next) {
   const id = new ObjectId(req.body.id);
@@ -105,6 +146,7 @@ router.post("/removelanguage", async function (req, res, next) {
 
   return res.status(200).json(new Status(true, ""));
 });
+
 
 router.get("/get/:id", isAuthenticated, async function(req, res){
 

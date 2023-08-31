@@ -63,6 +63,7 @@ export class MenuItem{
 
     otherprice: MenuOtherPriceEntry[]    
 
+    order: number;
     
     constructor(source: Partial<MenuItem>)
     {
@@ -78,7 +79,8 @@ export class MenuItem{
        details: details,
         userid: userid,
         type: type,
-        price: price
+        price: price,
+        order: 0
       });
     }
     
@@ -154,7 +156,7 @@ export class MenuItemDataStore {
     const query = { userid: new ObjectId(auserid), menucardid:  new ObjectId(amenucardid) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     console.log(query);
-    const cursor = await dbcoll.getCollection().find(query);
+    const cursor = await dbcoll.getCollection().find(query).sort({"order":1, "_id" : 1, });
     const menuitems: MenuItem[] = [];
     let obj;
     while (await cursor.hasNext())
@@ -177,7 +179,7 @@ export class MenuItemDataStore {
       if (result.modifiedCount > 0)
         logger.debug("A document was updated with the _id");
       else
-        logger.debug("No document found for update");
+        logger.debug("No document found for update " + JSON.stringify(query));
     } finally {
     }
   }

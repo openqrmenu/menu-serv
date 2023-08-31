@@ -25,6 +25,20 @@ router.post("/add", isAuthenticated, async function (req, res)
 
   const mids: MenuItemDataStore = new MenuItemDataStore();
 
+  /*
+  const menuitems = await mids.getMenuItems(myuser.id, menuItem.menucardid);
+  const cats = menuitems.filter(item => {
+        if (item.type != "category" && item.parentid == menuItem.parentid)
+        {
+          return true;
+        }
+
+        return false;
+  });
+  menuItem.order = cats.length + 1;
+*/
+  menuItem.order = 1; // default
+
   mids.addMenuItem(menuItem);
   console.log(menuItem);
   res.status(200).json(new Status(true));
