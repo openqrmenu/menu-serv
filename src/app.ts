@@ -10,12 +10,11 @@ import MongoStore from "connect-mongo";
 import cors from "cors";
 
 import cookieparser from "cookie-parser";
-import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME, ISPRODUCTION, OTP_JWT_SECRET } from "./util/secrets";
+import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME, ISPRODUCTION, OTP_JWT_SECRET, APP_URL } from "./util/secrets";
 import logger from "./util/logger";
 
 import DBStore from "./util/db/db";
 
-import indexRouter from "./routes/index";
 import authRouter from "./routes/auth";
 import menuCardRouter from "./routes/menucard";
 import menuItemRouter from "./routes/menuitem";
@@ -52,7 +51,7 @@ app.use(morgan("dev", { stream: {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieparser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use("/app", express.static(path.join(__dirname, "app")));
 app.set("port", process.env.PORT || 3000);
 app.use(compression());
 app.use(session({
@@ -70,9 +69,9 @@ if (!ISPRODUCTION) // UI Development mode
 {
   app.use(cors({
     credentials: true,
-    origin: ["http://localhost:4000"] // 
+    origin: [APP_URL] // 
   }));
-  }
+}
 
 // LUSCA options
 //app.use(lusca.xframe("SAMEORIGIN"));
@@ -103,7 +102,6 @@ app.use(function(err, req, res, next) {
 */
 
 // ROUTE HANDLERS
-//app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/menucard", menuCardRouter);
 app.use("/menuitem", menuItemRouter);

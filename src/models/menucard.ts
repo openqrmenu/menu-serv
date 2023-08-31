@@ -3,7 +3,6 @@ import { DBCollection } from "../util/db/dbcollection";
 import { MONGODB_DB_NAME } from "../util/secrets";
 import logger from "../util/logger";
 import { MenuItemDataStore } from "./menuitem";
-
 export class MenuLanguage {
   code: string;
   name: string;
@@ -57,12 +56,11 @@ export class MenuCardObject {
 }
 
 const COLLNAME = "menucards";
-
 export class MenuCardDataStore {
 
-  async findByName(name: string): Promise<MenuCardObject>
+  async findByName(auserid: ObjectId, name: string): Promise<MenuCardObject>
   {
-    const query = { name: name };
+    const query = { userid: new ObjectId(auserid), name: name };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
     if (obj === null)
@@ -75,7 +73,6 @@ export class MenuCardDataStore {
   {
     const query = { userid: new ObjectId(auserid) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-    console.log(query);
     const cursor = await dbcoll.getCollection().find(query);
     const menucards: MenuCardObject[] = [];
     let obj;
@@ -84,10 +81,11 @@ export class MenuCardDataStore {
       obj = await cursor.next();
       const menucard = new MenuCardObject(obj);  
 
+      // TODO: UGLY, maybe move this into the constructor of the MenuCardObject?
       const mids: MenuItemDataStore = new MenuItemDataStore();
       const items = await mids.getMenuItems(new ObjectId(auserid), new ObjectId(menucard._id as string));
       menucard.count = items.length;
-        
+
       menucards.push(menucard);
     }
     return menucards;
@@ -99,7 +97,6 @@ export class MenuCardDataStore {
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
     const menucard = new MenuCardObject(obj);
-    logger.debug(menucard);
     return menucard;
   }
 
@@ -109,7 +106,6 @@ export class MenuCardDataStore {
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
     const menucard = new MenuCardObject(obj);
-    logger.debug(menucard);
     return menucard;
   }
 
@@ -118,26 +114,23 @@ export class MenuCardDataStore {
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       const result = await dbcoll.getCollection().insertOne(menucard);
       logger.debug(`A document was inserted with the _id: ${result.insertedId}`);
-      //menucard.id = new ObjectId(result.insertedId);
       return menucard;
     } finally {
     }
   }
 
-    async update(menucard: MenuCardObject): Promise<any> {
+    async update(userid: ObjectId, menucard: MenuCardObject): Promise<any> {
     try {
-      const query = { _id: menucard._id };
+      const query = { userid: new ObjectId(userid), _id: menucard._id };
       const options = { upsert: true };
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       delete menucard._id;
       const updateDoc = { $set: menucard};
-      console.log(query);
-      console.log(updateDoc);
       const result = await dbcoll.getCollection().updateOne(query, updateDoc, options);
       if (result.modifiedCount > 0)
-        logger.debug("A document was updated with the _id ");
+        logger.debug("A document was updated with the _id " + menucard._id);
       else
-        logger.debug("No document found for update");
+        logger.debug("No menucard was found for update with _id " + menucard._id);
     } finally {
     }
   }
@@ -154,9 +147,4 @@ export class MenuCardDataStore {
     } finally {
     }
   }
-  
 }
-
-
-
-    

@@ -52,7 +52,6 @@ export class MenuItemLanguageEntry
 
 export class MenuItem{
     [prop: string]: unknown; // Prevent Weak Type errors https://mariusschulz.com/blog/weak-type-detection-in-typescript
-
     details: MenuItemLanguageEntry[];
     userid: ObjectId;
     menucardid: ObjectId;
@@ -121,11 +120,9 @@ export class MenuItemDataStore {
         }
       }
 
-
       async deleteById(id: ObjectId, userid: ObjectId): Promise<void> {
         try {
           const query = { _id: new ObjectId(id), userid: new ObjectId(userid) };
-          console.log(query);
           const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
           const result = await dbcoll.getCollection().deleteOne(query);
           if (result.deletedCount === 1)
@@ -139,7 +136,6 @@ export class MenuItemDataStore {
       async deleteByParentId(id: string, userid: ObjectId): Promise<void> {
         try {
           const query = { parentid: new ObjectId(id), userid: new ObjectId(userid) };
-          console.log(query);
           const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
           const result = await dbcoll.getCollection().deleteMany(query);
           if (result.deletedCount > 0)
@@ -153,7 +149,7 @@ export class MenuItemDataStore {
       async deleteByMenuCardId(menuCardId: ObjectId, userid: ObjectId): Promise<void> {
         try {
           const query = { menucardid: new ObjectId(menuCardId), userid: new ObjectId(userid) };
-          console.log("Cleaning up child menu items using " + query);
+          logger.debug("Cleaning up child menu items using " + query);
           const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
           const result = await dbcoll.getCollection().deleteMany(query);
           if (result.deletedCount > 0)
@@ -169,7 +165,6 @@ export class MenuItemDataStore {
   {
     const query = { userid: new ObjectId(auserid), menucardid:  new ObjectId(amenucardid) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-    console.log(query);
     const cursor = await dbcoll.getCollection().find(query).sort({"order":1, "_id" : 1, });
     const menuitems: MenuItem[] = [];
     let obj;
@@ -198,7 +193,3 @@ export class MenuItemDataStore {
     }
   }
 }
-
-
-
-    

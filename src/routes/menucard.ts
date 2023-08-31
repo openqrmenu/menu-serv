@@ -1,9 +1,5 @@
 import express from "express";
-import passport from "passport";
-import passportLocal from "passport-local";
 import { isAuthenticated } from "../config/passport";
-import { Request, Response, NextFunction } from "express";
-import bcrypt from "bcrypt";
 import { MenuCardDataStore, MenuCardObject, MenuLanguage } from "../models/menucard";
 import { Status } from "../models/status";
 import { ObjectId } from "bson";
@@ -13,35 +9,20 @@ import { MenuCategoryObject, MenuItem, MenuItemDataStore, MenuItemLanguageEntry,
 const router = express.Router();
 
 router.get("/getall", isAuthenticated, async function(req, res){
-
   const myuser: User = req.user as User;
   const mcds: MenuCardDataStore = new MenuCardDataStore();
   const existingmcs: Array<MenuCardObject> = await mcds.findAll(myuser.id);
-
-  /*
-  const mids: MenuItemDataStore = new MenuItemDataStore();
-  existingmcs.forEach(async menucard => {
-    const items = await mids.getMenuItems(myuser.id, new ObjectId(menucard._id as string));
-    menucard.count = items.length;
-
-    console.log(menucard);
-  });
-  */
-
   res.status(200).json(existingmcs);
-}
-);
+});
 
-
-router.post("/add", async function (req, res, next) {
+router.post("/add", isAuthenticated, async function (req, res, next) {
   const menucard = new MenuCardObject(req.body);
   const myuser: User = req.user as User;
   menucard.userid = new ObjectId(myuser.id);
   menucard.updated = new Date();
     
-  
   const mcds: MenuCardDataStore = new MenuCardDataStore();
-  const existingmc: MenuCardObject = await mcds.findByName(menucard.name);
+  const existingmc: MenuCardObject = await mcds.findByName(myuser.id, menucard.name);
   if (existingmc === null)
   {
     const upmenucard = await mcds.add(menucard);
@@ -49,7 +30,7 @@ router.post("/add", async function (req, res, next) {
   }
 
   return res.status(409).json(
-    new Status(false,"Menu card already exists"));
+    new Status(false,"Menu card already exists, choose another one"));
 
 });
 
@@ -58,7 +39,6 @@ router.post("/update", isAuthenticated, async function (req, res)
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
-  console.log(req.body);
   const menucard = new MenuCardObject(req.body);
   menucard.userid = new ObjectId(myuser.id);
   menucard.updated = new Date();
@@ -66,7 +46,7 @@ router.post("/update", isAuthenticated, async function (req, res)
 
   const mcds: MenuCardDataStore = new MenuCardDataStore();
 
-  mcds.update(menucard);
+  mcds.update(myuser.id, menucard);
   res.status(200).json(new Status(true, ""));
 });
 
@@ -84,11 +64,9 @@ router.post("/updatednd", isAuthenticated, async function (req, res)
 
   // Add the ordering info
   const mids: MenuItemDataStore = new MenuItemDataStore();
-
-
-  const menucats = menucard["items"];
+  const menucats: any = menucard["items"];
   let order = 0;
-  menucats.forEach(item => {
+  menucats.forEach((item: { [x: string]: any; }) => {
     item["category"].order = order;
     order++;
 
@@ -99,7 +77,7 @@ router.post("/updatednd", isAuthenticated, async function (req, res)
     mids.updateMenuItem(catItem);
     
     const items = item["menuitems"];
-    items.forEach(subitem => {
+    items.forEach((subitem: Partial<MenuItem>) => {
       subitem.order = order;
       order++;
 
@@ -110,13 +88,12 @@ router.post("/updatednd", isAuthenticated, async function (req, res)
       mids.updateMenuItem(subMenuItem);
     });
   });
-
   
   res.status(200).json(new Status(true, ""));
 });
 
 
-router.post("/delete", async function (req, res, next) {
+router.post("/delete", isAuthenticated, async function (req, res, next) {
   const id = new ObjectId(req.body.id);
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
@@ -130,7 +107,7 @@ router.post("/delete", async function (req, res, next) {
   return res.status(200).json(new Status(true, ""));
 });
 
-router.post("/addlanguage", async function (req, res, next) {
+router.post("/addlanguage", isAuthenticated, async function (req, res, next) {
   const id = new ObjectId(req.body.id);
   const code = req.body.code;
   const name = req.body.name;
@@ -143,13 +120,13 @@ router.post("/addlanguage", async function (req, res, next) {
   const ml = new MenuLanguage(code, name);
   existingmc.languages.push(ml);
 
-  await mcds.update(existingmc);
+  await mcds.update(myuser.id, existingmc);
 
   return res.status(200).json(new Status(true, ""));
 });
 
 
-router.post("/removelanguage", async function (req, res, next) {
+router.post("/removelanguage", isAuthenticated, async function (req, res, next) {
   const id = new ObjectId(req.body.id);
   const code = req.body.code;
   const myuser: User = req.user as User;
@@ -161,7 +138,7 @@ router.post("/removelanguage", async function (req, res, next) {
   if (index !== -1)
     existingmc.languages.splice(index, 1);
 
-  await mcds.update(existingmc);
+  await mcds.update(myuser.id, existingmc);
 
   return res.status(200).json(new Status(true, ""));
 });
@@ -205,32 +182,6 @@ router.get("/get/:id", isAuthenticated, async function(req, res){
 
   
   existingmc["items"] = menucats;
-/*
-  // Sample Category
-  const categoryDetail = [ MenuItemLanguageEntry.createNew("en", "Appetizers") ];
-  const category = MenuItem.createNew(categoryDetail, new ObjectId("64c2c45ffbe4a246d54ab752"), "category");
-
-  // item 1
-  const itemDetail1 = [ MenuItemLanguageEntry.createNew("en", "Chicken 65", "Cubes of Marinated Chicken") ];
-  const otherPrice1 = [ MenuOtherPriceEntry.createNew("en", "Large", 14.24), MenuOtherPriceEntry.createNew("en", "Small", 5.6)];
-  const item1 = MenuItem.createNew(itemDetail1, new ObjectId("64c2c45ffbe4a246d54ab752"), "item", 25, "usd", "$", otherPrice1);
-  
-  // item 2
-  const itemDetail2 = [ MenuItemLanguageEntry.createNew("en", "Goat Soup", "Goat pieces in a aromatic mix of soup") ];
-  const otherPrice2 = [ MenuOtherPriceEntry.createNew("en", "Large", 14.24), MenuOtherPriceEntry.createNew("en", "Small", 5.6)];
-  const item2 = MenuItem.createNew(itemDetail2, new ObjectId("64c2c45ffbe4a246d54ab752"), "item", 13, "usd", "$", otherPrice2);
-  
-  const menuCategory: MenuCategoryObject =  MenuCategoryObject.createNew(category,[item1, item2]);
-
-  // Insert into Menu card
-  existingmc["items"] = [ menuCategory ];
-  */
-
   res.status(200).json(existingmc);
-}
-);
-
-
-
-
+});
 export default router;

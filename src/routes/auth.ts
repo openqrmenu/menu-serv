@@ -1,6 +1,5 @@
 import express from "express";
 import passport from "passport";
-import passportLocal from "passport-local";
 import { isAuthenticated } from "../config/passport";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
@@ -8,7 +7,7 @@ import { UserDataStore, UserObject } from "../models/user";
 import { Status } from "../models/status";
 import jwt from "jsonwebtoken";
 
-import { OTP_JWT_SECRET } from "../util/secrets";
+import { OTP_JWT_SECRET, APP_URL } from "../util/secrets";
 
 const router = express.Router();
 
@@ -86,19 +85,18 @@ router.post("/login/token", function(req, res, next) {
         if (err)
         {
           console.log(err);
-          return res.redirect("http://localhost:4000");
+          return res.redirect(APP_URL);
         }
-        console.log(decoded);
 
         const uds: UserDataStore = new UserDataStore();
         const user: UserObject = await uds.findById(decoded.data);
         if (user === null)
         {
           console.log("Cannot Find User ");  
-          return res.redirect("http://localhost:4000");
+          return res.redirect(APP_URL);
         }
 
-        console.log("Found User:");
+        console.log("Found User for Login with Token:");
         console.log(user);  
         req.logIn(user, function(err) {
           if (err) { return next(err); }
@@ -111,7 +109,6 @@ router.post("/login/token", function(req, res, next) {
 
 
 router.get("/checkauth", isAuthenticated, function(req, res){
-
     res.status(200).json({
         status: "Login successful!"
     });
@@ -121,7 +118,7 @@ router.get("/redirect/google", function(req, res, next) {
   passport.authenticate("google", function(err, user, info) {
     if (err) { return next(err); }
     if (!user) {
-      return res.redirect("http://localhost:3000");
+      return res.redirect(APP_URL);
     }
 
     const payload =  { exp: Math.floor(Date.now() / 1000) + (60 * 60), data: user._id};
@@ -130,9 +127,7 @@ router.get("/redirect/google", function(req, res, next) {
     const token = jwt.sign(
      payload, OTP_JWT_SECRET);
 
-    res.redirect("http://localhost:4000/#/oauthlogin?token=" + token);
-
-    
+    res.redirect(APP_URL + "/#/oauthlogin?token=" + token);
   })(req, res, next);
 });
 
@@ -149,13 +144,11 @@ router.get("/getstatus", function (req, res)
  *
  * This route logs the user out.
  */
-router.post("/logout", function(req: Request, res: Response, next: NextFunction) {
+router.post("/logout", function (req: Request, res: Response, next: NextFunction) {
     req.session.destroy(function (err) {
-    res.status(200).clearCookie("connect.sid").json(
-      new Status(false) 
-    );
-  });
-  });
+      res.status(200).clearCookie("connect.sid").json(new Status(false));
+    });
+});
 
 /* POST /signup
  *
@@ -175,7 +168,6 @@ router.post("/signup", async function (req, res, next) {
     hash_password: hashedpassword,
   });
   
-
   const uds: UserDataStore = new UserDataStore();
   const existinguser: UserObject = await uds.findByEmail(email);
   if (existinguser === null)
