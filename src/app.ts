@@ -25,8 +25,6 @@ process.on("uncaughtException", function (exception) {
 });
 */
 
-console.log(OTP_JWT_SECRET);
-
 // Create Express server
 const app = express();
 

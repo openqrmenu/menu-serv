@@ -73,7 +73,7 @@ export class MenuCardDataStore {
   {
     const query = { userid: new ObjectId(auserid) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-    const cursor = await dbcoll.getCollection().find(query);
+    const cursor = dbcoll.getCollection().find(query);
     const menucards: MenuCardObject[] = [];
     let obj;
     while (await cursor.hasNext())

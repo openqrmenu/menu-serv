@@ -1,6 +1,7 @@
 import passport from "passport";
 import passportLocal from "passport-local";
 import passportGoogle from "passport-google-oauth20";
+import logger from "../util/logger";
 
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../util/secrets";
 
@@ -48,7 +49,7 @@ passport.use(new GoogleStrategy({
 async function(accessToken, refreshToken, profile, cb) {
     // get profile details
     // save profile details in db
-    console.log(profile);
+    logger.debug(profile);
     const uds: UserDataStore = new UserDataStore();
     const user: UserObject = await uds.findByGoogleID(profile.id);
     if (user === null)
@@ -88,7 +89,7 @@ passport.serializeUser(function (
   user: any,
   cb: CallableFunction
 ) {
-  console.log(user);
+  //console.log(user);
   process.nextTick(function () {
     cb(null, { id: user._id });
   });

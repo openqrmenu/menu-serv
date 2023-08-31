@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { UserDataStore, UserObject } from "../models/user";
 import { Status } from "../models/status";
 import jwt from "jsonwebtoken";
+import logger from "../util/logger";
 
 import { OTP_JWT_SECRET, APP_URL } from "../util/secrets";
 
@@ -84,7 +85,7 @@ router.post("/login/token", function(req, res, next) {
       {
         if (err)
         {
-          console.log(err);
+          logger.debug(err);
           return res.redirect(APP_URL);
         }
 
@@ -92,12 +93,12 @@ router.post("/login/token", function(req, res, next) {
         const user: UserObject = await uds.findById(decoded.data);
         if (user === null)
         {
-          console.log("Cannot Find User ");  
+          logger.debug("Cannot Find User ");  
           return res.redirect(APP_URL);
         }
 
-        console.log("Found User for Login with Token:");
-        console.log(user);  
+        logger.debug("Found User for Login with Token:");
+        logger.debug(user);  
         req.logIn(user, function(err) {
           if (err) { return next(err); }
           return res.status(200).json(
@@ -122,7 +123,7 @@ router.get("/redirect/google", function(req, res, next) {
     }
 
     const payload =  { exp: Math.floor(Date.now() / 1000) + (60 * 60), data: user._id};
-    console.log(payload);
+    logger.debug(payload);
     // Generate JWT token
     const token = jwt.sign(
      payload, OTP_JWT_SECRET);

@@ -115,8 +115,6 @@ router.post("/addlanguage", isAuthenticated, async function (req, res, next) {
 
   const mcds: MenuCardDataStore = new MenuCardDataStore();
   const existingmc: MenuCardObject = await mcds.findByUserId(myuser.id, id);
-  console.log(existingmc);
-
   const ml = new MenuLanguage(code, name);
   existingmc.languages.push(ml);
 
