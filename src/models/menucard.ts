@@ -2,6 +2,7 @@ import { ObjectId } from "bson";
 import { DBCollection } from "../util/db/dbcollection";
 import { MONGODB_DB_NAME } from "../util/secrets";
 import logger from "../util/logger";
+import { MenuItemDataStore } from "./menuitem";
 
 export class MenuLanguage {
   code: string;
@@ -81,10 +82,13 @@ export class MenuCardDataStore {
     while (await cursor.hasNext())
     {
       obj = await cursor.next();
-      
       const menucard = new MenuCardObject(obj);  
-      menucards.push(menucard);
 
+      const mids: MenuItemDataStore = new MenuItemDataStore();
+      const items = await mids.getMenuItems(new ObjectId(auserid), new ObjectId(menucard._id as string));
+      menucard.count = items.length;
+        
+      menucards.push(menucard);
     }
     return menucards;
   }

@@ -138,12 +138,26 @@ export class MenuItemDataStore {
       
       async deleteByParentId(id: string, userid: ObjectId): Promise<void> {
         try {
-          const query = { parentid: id, userid: new ObjectId(userid) };
+          const query = { parentid: new ObjectId(id), userid: new ObjectId(userid) };
           console.log(query);
           const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-          const result = await dbcoll.getCollection().deleteOne(query);
-          if (result.deletedCount === 1)
-            logger.debug(`A document was deleted with the _id: ${id}`);
+          const result = await dbcoll.getCollection().deleteMany(query);
+          if (result.deletedCount > 0)
+            logger.debug(`Multiple documents ${result.deletedCount} were deleted`);
+          else
+            logger.debug("No documents found to delete");
+        } finally {
+        }
+      }
+
+      async deleteByMenuCardId(menuCardId: ObjectId, userid: ObjectId): Promise<void> {
+        try {
+          const query = { menucardid: new ObjectId(menuCardId), userid: new ObjectId(userid) };
+          console.log("Cleaning up child menu items using " + query);
+          const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+          const result = await dbcoll.getCollection().deleteMany(query);
+          if (result.deletedCount > 0)
+            logger.debug(`Multiple documents ${result.deletedCount} were deleted`);
           else
             logger.debug("No documents found to delete");
         } finally {

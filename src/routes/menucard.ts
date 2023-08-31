@@ -17,7 +17,18 @@ router.get("/getall", isAuthenticated, async function(req, res){
   const myuser: User = req.user as User;
   const mcds: MenuCardDataStore = new MenuCardDataStore();
   const existingmcs: Array<MenuCardObject> = await mcds.findAll(myuser.id);
-    res.status(200).json(existingmcs);
+
+  /*
+  const mids: MenuItemDataStore = new MenuItemDataStore();
+  existingmcs.forEach(async menucard => {
+    const items = await mids.getMenuItems(myuser.id, new ObjectId(menucard._id as string));
+    menucard.count = items.length;
+
+    console.log(menucard);
+  });
+  */
+
+  res.status(200).json(existingmcs);
 }
 );
 
@@ -27,7 +38,7 @@ router.post("/add", async function (req, res, next) {
   const myuser: User = req.user as User;
   menucard.userid = new ObjectId(myuser.id);
   menucard.updated = new Date();
-  
+    
   
   const mcds: MenuCardDataStore = new MenuCardDataStore();
   const existingmc: MenuCardObject = await mcds.findByName(menucard.name);
@@ -59,6 +70,8 @@ router.post("/update", isAuthenticated, async function (req, res)
   res.status(200).json(new Status(true, ""));
 });
 
+// Update Ordering for the entire menu item and update the values in the database
+// TODO: Skip item update when order hasn't changed
 router.post("/updatednd", isAuthenticated, async function (req, res)
 {
   const myuser: User = req.user as User;
@@ -82,6 +95,7 @@ router.post("/updatednd", isAuthenticated, async function (req, res)
     const catItem = new MenuItem(item["category"]);
     catItem._id = new ObjectId(catItem._id as string);
     catItem.userid = new ObjectId(userid);
+    catItem.parentid = new ObjectId(catItem.parentid);
     mids.updateMenuItem(catItem);
     
     const items = item["menuitems"];
@@ -92,6 +106,7 @@ router.post("/updatednd", isAuthenticated, async function (req, res)
       const subMenuItem = new MenuItem(subitem);
       subMenuItem._id = new ObjectId(subMenuItem._id as string);
       subMenuItem.userid = new ObjectId(userid);
+      subMenuItem.parentid = new ObjectId(subMenuItem.parentid);
       mids.updateMenuItem(subMenuItem);
     });
   });
@@ -108,6 +123,10 @@ router.post("/delete", async function (req, res, next) {
   
   const mcds: MenuCardDataStore = new MenuCardDataStore();
   await mcds.deleteById(id, userid);
+
+  const mids: MenuItemDataStore = new MenuItemDataStore();
+  await mids.deleteByMenuCardId(id, userid);
+
   return res.status(200).json(new Status(true, ""));
 });
 
@@ -172,7 +191,7 @@ router.get("/get/:id", isAuthenticated, async function(req, res){
   const menucats: MenuCategoryObject[] = [];
   cats.forEach(item => {
     const subitems = menuitems.filter(mitem => {
-        if (mitem.type != "category" && mitem.parentid == item._id)
+        if (mitem.type != "category" && mitem.parentid.toString() == item._id.toString())
         {
           return true;
         }

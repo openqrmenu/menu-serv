@@ -20,7 +20,10 @@ router.post("/add", isAuthenticated, async function (req, res)
 
   console.log(req.body);
   const menuItem = new MenuItem(req.body);
-  //menuItem.type = "category";
+  if (menuItem.type == "category")
+    menuItem.parentid = new ObjectId("507f1f77bcf86cd799439011");
+  else
+    menuItem.parentid = new ObjectId(menuItem.parentid);
   menuItem.userid = new ObjectId(userid);
 
   const mids: MenuItemDataStore = new MenuItemDataStore();
@@ -37,7 +40,7 @@ router.post("/add", isAuthenticated, async function (req, res)
   });
   menuItem.order = cats.length + 1;
 */
-  menuItem.order = 1; // default
+  menuItem.order = 1000; // default
 
   mids.addMenuItem(menuItem);
   console.log(menuItem);
