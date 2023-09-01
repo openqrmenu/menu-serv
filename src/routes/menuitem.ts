@@ -4,11 +4,24 @@ import { Status } from "../models/status";
 import { ObjectId } from "bson";
 import { User } from "../types/custom";
 import { MenuItem, MenuItemDataStore } from "../models/menuitem";
+import { body, validationResult, ValidationError, Result } from "express-validator";
+import { validationErrorMsg } from "../util/validation";
 
 const router = express.Router();
 
-router.post("/add", isAuthenticated, async function (req, res)
+router.post("/add", isAuthenticated, 
+body("menucardid").trim().escape().isMongoId(),
+body("parentid").trim().escape().isMongoId(),
+body("type").trim().escape().notEmpty(),
+body("price").trim().escape().isNumeric(),
+body("details").notEmpty(),
+async function (req, res)
 {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
@@ -26,13 +39,25 @@ router.post("/add", isAuthenticated, async function (req, res)
   res.status(200).json(new Status(true));
 });
 
-router.post("/update", isAuthenticated, async function (req, res)
+router.post("/update", isAuthenticated, 
+body("_id").trim().escape().isMongoId(),
+body("menucardid").trim().escape().isMongoId(),
+body("parentid").trim().escape().isMongoId(),
+body("type").trim().escape().notEmpty(),
+body("price").trim().escape().isNumeric(),
+body("details").notEmpty(),
+async function (req, res)
 {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
   const menuItem = new MenuItem(req.body);
-  menuItem.userid = new ObjectId(userid);
+  menuItem.userid = new ObjectId(userid); // Override UserID
   menuItem._id = new ObjectId(menuItem._id as string);
 
   const mids: MenuItemDataStore = new MenuItemDataStore();
@@ -41,7 +66,14 @@ router.post("/update", isAuthenticated, async function (req, res)
   res.status(200).json(new Status(true));
 });
 
-router.post("/delete", async function (req, res, next) {
+router.post("/delete", isAuthenticated, 
+body("id").trim().escape().isMongoId(),
+async function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const id = new ObjectId(req.body.id);
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);

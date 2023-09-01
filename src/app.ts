@@ -1,6 +1,7 @@
 import express from "express";
 import compression from "compression";  // compresses requests
 import session from "express-session";
+import ExpressMongoSanitize  from "express-mongo-sanitize";
 import lusca from "lusca";
 import path from "path";
 import passport from "passport";
@@ -48,6 +49,12 @@ app.use(morgan("dev", { stream: {
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(ExpressMongoSanitize({
+  onSanitize: ({req: Request, key:string}) => {
+    logger.warn("Request is sanitized because of bad MongoDB input ");
+  },
+}));
+
 app.use(cookieparser());
 app.use("/app", express.static(path.join(__dirname, "app")));
 app.set("port", process.env.PORT || 3000);

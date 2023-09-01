@@ -5,6 +5,8 @@ import { Status } from "../models/status";
 import { ObjectId } from "bson";
 import { User } from "../types/custom";
 import { MenuCategoryObject, MenuItem, MenuItemDataStore, MenuItemLanguageEntry, MenuOtherPriceEntry } from "../models/menuitem";
+import { body, param, validationResult, ValidationError, Result } from "express-validator";
+import { validationErrorMsg } from "../util/validation";
 
 const router = express.Router();
 
@@ -15,7 +17,17 @@ router.get("/getall", isAuthenticated, async function(req, res){
   res.status(200).json(existingmcs);
 });
 
-router.post("/add", isAuthenticated, async function (req, res, next) {
+router.post("/add", isAuthenticated, 
+body("name").trim().escape().notEmpty(),
+body("description").trim(),
+body("currency").trim(),
+body("languages").notEmpty(),
+async function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const menucard = new MenuCardObject(req.body);
   const myuser: User = req.user as User;
   menucard.userid = new ObjectId(myuser.id);
@@ -34,8 +46,18 @@ router.post("/add", isAuthenticated, async function (req, res, next) {
 
 });
 
-router.post("/update", isAuthenticated, async function (req, res)
+router.post("/update", isAuthenticated, 
+body("name").trim().escape().notEmpty(),
+body("description").trim(),
+body("currency").trim(),
+body("languages").notEmpty(),
+async function (req, res)
 {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
@@ -52,8 +74,19 @@ router.post("/update", isAuthenticated, async function (req, res)
 
 // Update Ordering for the entire menu item and update the values in the database
 // TODO: Skip item update when order hasn't changed
-router.post("/updatednd", isAuthenticated, async function (req, res)
+router.post("/updatednd", isAuthenticated, 
+body("name").trim().escape().notEmpty(),
+body("description").trim(),
+body("currency").trim(),
+body("languages").notEmpty(),
+body("items").notEmpty(),
+async function (req, res)
 {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
@@ -93,7 +126,14 @@ router.post("/updatednd", isAuthenticated, async function (req, res)
 });
 
 
-router.post("/delete", isAuthenticated, async function (req, res, next) {
+router.post("/delete", isAuthenticated, 
+body("id").trim().escape().isMongoId(),
+async function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const id = new ObjectId(req.body.id);
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
@@ -107,7 +147,15 @@ router.post("/delete", isAuthenticated, async function (req, res, next) {
   return res.status(200).json(new Status(true, ""));
 });
 
-router.post("/addlanguage", isAuthenticated, async function (req, res, next) {
+router.post("/addlanguage", isAuthenticated, 
+body("code").trim().escape().notEmpty(),
+body("name").trim().escape().notEmpty(),
+async function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const id = new ObjectId(req.body.id);
   const code = req.body.code;
   const name = req.body.name;
@@ -124,7 +172,14 @@ router.post("/addlanguage", isAuthenticated, async function (req, res, next) {
 });
 
 
-router.post("/removelanguage", isAuthenticated, async function (req, res, next) {
+router.post("/removelanguage", isAuthenticated, 
+body("code").trim().escape().notEmpty(),
+async function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const id = new ObjectId(req.body.id);
   const code = req.body.code;
   const myuser: User = req.user as User;
@@ -142,8 +197,14 @@ router.post("/removelanguage", isAuthenticated, async function (req, res, next) 
 });
 
 
-router.get("/get/:id", isAuthenticated, async function(req, res){
-
+router.get("/get/:id", isAuthenticated, 
+param("id").trim().escape().isMongoId(),
+async function(req, res){
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+  
   const myuser: User = req.user as User;
   if (!req.params.hasOwnProperty("id"))
   {

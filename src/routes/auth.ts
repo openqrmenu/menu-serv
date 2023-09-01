@@ -7,60 +7,21 @@ import { UserDataStore, UserObject } from "../models/user";
 import { Status } from "../models/status";
 import jwt from "jsonwebtoken";
 import logger from "../util/logger";
+import { body, validationResult, ValidationError, Result } from "express-validator";
+import { validationErrorMsg } from "../util/validation";
 
 import { OTP_JWT_SECRET, APP_URL } from "../util/secrets";
 
 const router = express.Router();
 
-/** POST /login/password
- *
- * This route authenticates the user by verifying a username and password.
- *
- * A username and password are submitted to this route via an HTML form, which
- * was rendered by the `GET /login` route.  The username and password is
- * authenticated using the `local` strategy.  The strategy will parse the
- * username and password from the request and call the `verify` function.
- *
- * Upon successful authentication, a login session will be established.  As the
- * user interacts with the app, by clicking links and submitting forms, the
- * subsequent requests will be authenticated by verifying the session.
- *
- * When authentication fails, the user will be re-prompted to login and shown
- * a message informing them of what went wrong.
- *
- * @openapi
- * /login/password:
- *   post:
- *     summary: Log in using a username and password
- *     requestBody:
- *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: number
- *     responses:
- *       "302":
- *         description: Redirect.
- */
+router.post("/login/password", 
+    body("email").trim().escape().isEmail(), 
+    body("password").trim().notEmpty(), function(req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
 
-/*
-router.post("/login/password",  passport.authenticate("local", (err, user, info) => {
-      console.log("Cb fired " + JSON.stringify(info));
-    }),
-        function(req, res) {
-          res.status(200).json(
-            {
-            "authenticated": true 
-            }
-          );
-});
-*/
-
-router.post("/login/password", function(req, res, next) {
   passport.authenticate("local", function(err, user, info) {
     if (err) { return next(err); }
     if (!user) { return res.status(401).json(
@@ -79,35 +40,39 @@ router.get("/login/google", passport.authenticate("google", {
   scope: ["email", "profile"],
 }));
 
-router.post("/login/token", function(req, res, next) {
-      const token = req.body.token;
-      jwt.verify(token, OTP_JWT_SECRET, async function (err: any, decoded: any)
-      {
-        if (err)
-        {
-          logger.debug(err);
-          return res.redirect(APP_URL);
-        }
+router.post("/login/token", body("token").isJWT(), function(req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
 
-        const uds: UserDataStore = new UserDataStore();
-        const user: UserObject = await uds.findById(decoded.data);
-        if (user === null)
-        {
-          logger.debug("Cannot Find User ");  
-          return res.redirect(APP_URL);
-        }
+  const token = req.body.token;
+  jwt.verify(token, OTP_JWT_SECRET, async function (err: any, decoded: any)
+  {
+    if (err)
+    {
+      logger.debug(err);
+      return res.redirect(APP_URL);
+    }
 
-        logger.debug("Found User for Login with Token:");
-        logger.debug(user);  
-        req.logIn(user, function(err) {
-          if (err) { return next(err); }
-          return res.status(200).json(
-            new Status(true) );
-        });
-      
-      });
+    const uds: UserDataStore = new UserDataStore();
+    const user: UserObject = await uds.findById(decoded.data);
+    if (user === null)
+    {
+      logger.debug("Cannot Find User ");  
+      return res.redirect(APP_URL);
+    }
+
+    logger.debug("Found User for Login with Token:");
+    logger.debug(user);  
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      return res.status(200).json(
+        new Status(true) );
     });
-
+  
+  });
+});
 
 router.get("/checkauth", isAuthenticated, function(req, res){
     res.status(200).json({
@@ -123,7 +88,7 @@ router.get("/redirect/google", function(req, res, next) {
     }
 
     const payload =  { exp: Math.floor(Date.now() / 1000) + (60 * 60), data: user._id};
-    logger.debug(payload);
+    
     // Generate JWT token
     const token = jwt.sign(
      payload, OTP_JWT_SECRET);
@@ -141,26 +106,21 @@ router.get("/getstatus", function (req, res)
   );
 });
   
-/* POST /logout
- *
- * This route logs the user out.
- */
 router.post("/logout", function (req: Request, res: Response, next: NextFunction) {
     req.session.destroy(function (err) {
       res.status(200).clearCookie("connect.sid").json(new Status(false));
     });
 });
 
-/* POST /signup
- *
- * This route creates a new user account.
- *
- * A desired username and password are submitted to this route via an HTML form,
- * which was rendered by the `GET /signup` route.  The password is hashed and
- * then a new user record is inserted into the database.  If the record is
- * successfully created, the user is logged in.
- */
-router.post("/signup", async function (req, res, next) {
+router.post("/signup", 
+body("email").trim().escape().isEmail(), 
+body("password").trim().notEmpty(), 
+async function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(new Status(false, validationErrorMsg(result)));
+  }
+
   const email = req.body.email;
   const password = req.body.password;
   const hashedpassword = bcrypt.hashSync(password, 10);

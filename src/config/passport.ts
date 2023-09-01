@@ -3,7 +3,7 @@ import passportLocal from "passport-local";
 import passportGoogle from "passport-google-oauth20";
 import logger from "../util/logger";
 
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../util/secrets";
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL } from "../util/secrets";
 
 
 import { Request, Response, NextFunction } from "express";
@@ -109,5 +109,5 @@ export const isAuthenticated = (
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("http://127.0.0.1:3000");
+  res.redirect(APP_URL);
 };
