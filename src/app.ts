@@ -56,7 +56,7 @@ app.use(ExpressMongoSanitize({
 }));
 
 app.use(cookieparser());
-app.use("/app", express.static(path.join(__dirname, "app")));
+app.use("/", express.static(path.join(__dirname, "app")));
 app.set("port", process.env.PORT || 3000);
 app.use(compression());
 app.use(session({
