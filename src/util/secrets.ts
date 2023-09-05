@@ -6,8 +6,8 @@ if (fs.existsSync(".env")) {
     logger.debug("Using .env file to supply config environment variables");
     dotenv.config({ path: ".env" });
 } else {
-    logger.debug("Using .env.example file to supply config environment variables");
-    dotenv.config({ path: ".env.example" });  // you can delete this after you create your own .env file!
+    logger.error("Missing .env file to supply config environment variables");
+    process.exit(1);
 }
 export const ENVIRONMENT = process.env.NODE_ENV;
 export const ISPRODUCTION = ENVIRONMENT === "production"; // Anything else is treated as 'dev'
@@ -38,3 +38,17 @@ export const GOOGLE_CLIENT_SECRET = process.env["GOOGLE_CLIENT_SECRET"];
 export const OTP_JWT_SECRET = process.env["OTP_JWT_SECRET"];
 
 export const APP_URL = process.env["APP_URL"];
+
+export const SERVER_URL = process.env["SERVER_URL"];
+
+export const SMTP_SERVER = process.env["SMTP_SERVER"];
+
+export const SMTP_PORT = process.env["SMTP_PORT"];
+
+export const SMTP_NAME = process.env["SMTP_NAME"];
+
+export const SMTP_PASSWORD = process.env["SMTP_PASSWORD"];
+
+export const FROM_EMAIL = process.env["FROM_EMAIL"];
+
+export const REPORT_EMAIL = process.env["REPORT_EMAIL"];

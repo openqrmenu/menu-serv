@@ -93,5 +93,12 @@ export class UserDataStore {
     } finally {
     }
   }
-  
+
+  async count(): Promise<number>
+  {
+    const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+    const userCount = await dbcoll.getCollection().estimatedDocumentCount();
+    return userCount;
+  }
+ 
 }

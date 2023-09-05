@@ -3,7 +3,7 @@ import passportLocal from "passport-local";
 import passportGoogle from "passport-google-oauth20";
 import logger from "../util/logger";
 
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL } from "../util/secrets";
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, SERVER_URL } from "../util/secrets";
 
 
 import { Request, Response, NextFunction } from "express";
@@ -42,7 +42,7 @@ const GoogleStrategy = passportGoogle.Strategy;
 passport.use(new GoogleStrategy({
   clientID: GOOGLE_CLIENT_ID,
   clientSecret: GOOGLE_CLIENT_SECRET,
-  callbackURL: "http://goqrmenu.com:3000/auth/redirect/google",
+  callbackURL: SERVER_URL + "/auth/redirect/google",
   scope: [ "profile" ],
   state: true
 },

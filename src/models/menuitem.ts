@@ -116,51 +116,61 @@ export class MenuItemDataStore {
           const result = await dbcoll.getCollection().insertOne(menuItem);
           logger.debug(`A document was inserted with the _id: ${result.insertedId}`);
           return menuItem;
-        } finally {
+        } 
+        finally {
         }
       }
 
-      async deleteById(id: ObjectId, userid: ObjectId): Promise<void> {
-        try {
-          const query = { _id: new ObjectId(id), userid: new ObjectId(userid) };
-          const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-          const result = await dbcoll.getCollection().deleteOne(query);
-          if (result.deletedCount === 1)
-            logger.debug(`A document was deleted with the _id: ${id}`);
-          else
-            logger.debug("No documents found to delete");
-        } finally {
-        }
-      }
+  async deleteById(id: ObjectId, userid: ObjectId): Promise<void> {
+    try {
+      const query = { _id: new ObjectId(id), userid: new ObjectId(userid) };
+      const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+      const result = await dbcoll.getCollection().deleteOne(query);
+      if (result.deletedCount === 1)
+        logger.debug(`A document was deleted with the _id: ${id}`);
+      else
+        logger.debug("No documents found to delete");
+    } 
+    finally {
+    }
+  }
+  
+  async deleteByParentId(id: string, userid: ObjectId): Promise<void> {
+    try {
+      const query = { parentid: new ObjectId(id), userid: new ObjectId(userid) };
+      const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+      const result = await dbcoll.getCollection().deleteMany(query);
+      if (result.deletedCount > 0)
+        logger.debug(`Multiple documents ${result.deletedCount} were deleted`);
+      else
+        logger.debug("No documents found to delete");
+    } 
+    finally {
+    }
+  }
+
+  async deleteByMenuCardId(menuCardId: ObjectId, userid: ObjectId): Promise<void> {
+    try {
+      const query = { menucardid: new ObjectId(menuCardId), userid: new ObjectId(userid) };
+      logger.debug("Cleaning up child menu items using " + query);
+      const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+      const result = await dbcoll.getCollection().deleteMany(query);
+      if (result.deletedCount > 0)
+        logger.debug(`Multiple documents ${result.deletedCount} were deleted`);
+      else
+        logger.debug("No documents found to delete");
+    } 
+    finally {
+    }
+  }
+
+  async count(): Promise<number>
+  {
+    const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+    const menuitemcount = await dbcoll.getCollection().estimatedDocumentCount();
+    return menuitemcount;
+  }    
       
-      async deleteByParentId(id: string, userid: ObjectId): Promise<void> {
-        try {
-          const query = { parentid: new ObjectId(id), userid: new ObjectId(userid) };
-          const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-          const result = await dbcoll.getCollection().deleteMany(query);
-          if (result.deletedCount > 0)
-            logger.debug(`Multiple documents ${result.deletedCount} were deleted`);
-          else
-            logger.debug("No documents found to delete");
-        } finally {
-        }
-      }
-
-      async deleteByMenuCardId(menuCardId: ObjectId, userid: ObjectId): Promise<void> {
-        try {
-          const query = { menucardid: new ObjectId(menuCardId), userid: new ObjectId(userid) };
-          logger.debug("Cleaning up child menu items using " + query);
-          const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-          const result = await dbcoll.getCollection().deleteMany(query);
-          if (result.deletedCount > 0)
-            logger.debug(`Multiple documents ${result.deletedCount} were deleted`);
-          else
-            logger.debug("No documents found to delete");
-        } finally {
-        }
-      }
-      
-
   async getMenuItems(auserid: ObjectId, amenucardid: ObjectId): Promise<Array<MenuItem>>
   {
     const query = { userid: new ObjectId(auserid), menucardid:  new ObjectId(amenucardid) };

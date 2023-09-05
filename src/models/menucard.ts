@@ -109,6 +109,13 @@ export class MenuCardDataStore {
     return menucard;
   }
 
+  async count(): Promise<number>
+  {
+    const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
+    const menucardcount = await dbcoll.getCollection().estimatedDocumentCount();
+    return menucardcount;
+  }    
+
   async  add(menucard: MenuCardObject): Promise<MenuCardObject> {
     try {
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
