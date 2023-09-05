@@ -1,9 +1,10 @@
 Test Google Login : http://goqrmenu.com:3000/auth/login/google
 
 
-To Run the project in dev mode
+# To Run the project in dev mode
+on Windows, set the NODE_ENV to development
+$env:NODE_ENV="development"
 npm run watch
-
 
 # Ubuntu 22.04 Setup Instructions
 - Install a non-root user and setup node using nvm
