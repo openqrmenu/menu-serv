@@ -1,9 +1,14 @@
 import errorHandler from "errorhandler";
 import app from "./app";
+import mailer from "./util/mailer";
 
 import https from "https";
 import fs from "fs";
 import path from "path";
+
+import { scheduleCron } from "./util/cron";
+
+
 
 /**
  * Error Handler. Provides full stack
@@ -20,8 +25,6 @@ if (process.env.NODE_ENV === "development") {
         );
         console.log("  Press CTRL-C to stop\n");
     });
-    
-    
 }
 else
 {
@@ -46,4 +49,7 @@ else
         console.log("  Press CTRL-C to stop\n");
     });
 }
+
+scheduleCron();
+
 //export default server;
