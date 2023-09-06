@@ -18,6 +18,7 @@ Follow instructions at https://www.digitalocean.com/community/tutorials/how-to-u
 NVM install via Option 3 https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04
 
 # Run the project in production
+npm install
 npm run build
 copy -R menu-ui/dist/* dist/public/app/
 copy src/public/* dist/public
