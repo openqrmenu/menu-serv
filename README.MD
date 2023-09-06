@@ -29,4 +29,4 @@ copy -R env dist/
 # change the port to 443
 # set the google secret and other secrets as needed
 
-NODE_ENV=prodiction pm2 start dist/server.js
+NODE_ENV=production pm2 start dist/server.js
