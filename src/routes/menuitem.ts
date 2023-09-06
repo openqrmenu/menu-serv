@@ -14,6 +14,7 @@ body("menucardid").trim().escape().isMongoId(),
 body("parentid").trim().escape().isMongoId(),
 body("type").trim().escape().notEmpty(),
 body("price").trim().escape().isNumeric(),
+body("enabled").trim().escape().isBoolean(),
 body("details").notEmpty(),
 async function (req, res)
 {
@@ -31,6 +32,7 @@ async function (req, res)
   else
     menuItem.parentid = new ObjectId(menuItem.parentid);
   menuItem.userid = new ObjectId(userid);
+  menuItem.enabled = (req.body.enabled == "true") ? true : false;
 
   const mids: MenuItemDataStore = new MenuItemDataStore();
   menuItem.order = 1000; // default to add to the end of the list
@@ -45,6 +47,7 @@ body("menucardid").trim().escape().isMongoId(),
 body("parentid").trim().escape().isMongoId(),
 body("type").trim().escape().notEmpty(),
 body("price").trim().escape().isNumeric(),
+body("enabled").trim().escape().isBoolean(),
 body("details").notEmpty(),
 async function (req, res)
 {
@@ -53,13 +56,17 @@ async function (req, res)
     return res.status(400).json(new Status(false, validationErrorMsg(result)));
   }
 
+  console.log(req.body);
+
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
   const menuItem = new MenuItem(req.body);
   menuItem.userid = new ObjectId(userid); // Override UserID
   menuItem._id = new ObjectId(menuItem._id as string);
+  menuItem.enabled = (req.body.enabled == "true") ? true : false;
 
+  console.log(menuItem);
   const mids: MenuItemDataStore = new MenuItemDataStore();
 
   mids.updateMenuItem(menuItem);

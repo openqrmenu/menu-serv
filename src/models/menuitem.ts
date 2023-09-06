@@ -63,23 +63,27 @@ export class MenuItem{
     otherprice: MenuOtherPriceEntry[]    
 
     order: number;
+
+    enabled: boolean;
     
     constructor(source: Partial<MenuItem>)
     {
       Object.assign(this, source);
       if (typeof this.menucardid  === "string")
         this.menucardid = new ObjectId(this.menucardid);
+      
     }
   
     public static createNew(details: MenuItemLanguageEntry[], userid: ObjectId, type: string, 
-        price: number = 0) : MenuItem
+        price: number = 0, enabled: boolean = true) : MenuItem
     {
       return new MenuItem({
        details: details,
         userid: userid,
         type: type,
         price: price,
-        order: 0
+        order: 0,
+        enabled: enabled
       });
     }
     
