@@ -2,6 +2,8 @@
 
 This project is part of the OpenQRMenu Service and is the nodejs web server built using typescript using MongoDB as the database.
 
+OpenQRMenu is hosted at [Go QR Menu](https://goqrmenu.com)
+
 Note that the UI for this service is the openqrmenu/menu-ui vuejs3 project.
 
 ## Development
