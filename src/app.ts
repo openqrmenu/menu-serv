@@ -45,14 +45,24 @@ const MemoryStore = createMemoryStore(session);
 
 // Express configuration
 // Baseline security headers. CSP, frame and cross-origin policies are left off on purpose:
-// the Vue app and the public menu pages (which restaurants may embed) rely on them being open.
+// the landing page loads Tailwind, fonts, analytics and GitHub buttons from other origins, and the
+// public menu pages (which restaurants may embed) rely on them being open. Note helmet 5 turns
+// Cross-Origin-Embedder-Policy on by default, which blocks every third-party resource.
 app.use(helmet({
   contentSecurityPolicy: false,
   frameguard: false,
+  crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: false,
   crossOriginOpenerPolicy: false,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" }, // browser default, keeps analytics referrers
   hsts: { maxAge: 15552000, includeSubDomains: false }
 }));
+// Send the explicit default instead of omitting the header. Browsers that cached an earlier
+// "require-corp" keep it across 304 revalidations unless a response overrides it.
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+  next();
+});
 app.use(morgan("dev", { stream: {
         write: (message) => logger.debug(message.trim())
     }
