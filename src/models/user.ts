@@ -24,7 +24,8 @@ export class UserDataStore {
   {
     const query = { email: email };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
-    const obj = await dbcoll.getCollection().findOne(query);
+    // Case-insensitive match so accounts stored before emails were lowercased can still be found
+    const obj = await dbcoll.getCollection().findOne(query, { collation: { locale: "en", strength: 2 } });
     if (obj === null)
       return null;
     const user = new UserObject(obj);
@@ -47,14 +48,15 @@ export class UserDataStore {
     const query = { _id: new ObjectId(id) };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
-    const user = new UserObject(obj);
-    logger.debug(user);
-    return user;
+    if (obj === null)
+      return null;
+    return new UserObject(obj);
   }
 
-  async add(user: UserObject): Promise<void> 
+  async add(user: UserObject): Promise<void>
   {
     try {
+      user.createdAt = new Date();
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       const result = await dbcoll.getCollection().insertOne(user);
       logger.debug(`A document was inserted with the _id: ${result.insertedId}`);

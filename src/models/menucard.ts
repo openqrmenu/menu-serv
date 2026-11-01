@@ -105,6 +105,8 @@ export class MenuCardDataStore {
     const query = { _id: id };
     const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
     const obj = await dbcoll.getCollection().findOne(query);
+    if (obj === null)
+      return null;
     const menucard = new MenuCardObject(obj);
     return menucard;
   }
@@ -118,6 +120,9 @@ export class MenuCardDataStore {
 
   async  add(menucard: MenuCardObject): Promise<MenuCardObject> {
     try {
+      // Server-owned fields: never trust values sent by the client
+      menucard.createdAt = new Date();
+      menucard.views = 0;
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       const result = await dbcoll.getCollection().insertOne(menucard);
       logger.debug(`A document was inserted with the _id: ${result.insertedId}`);
@@ -132,6 +137,9 @@ export class MenuCardDataStore {
       const options = { upsert: true };
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       delete menucard._id;
+      // The UI sends the whole card back on edit; don't let that overwrite server-owned fields
+      delete menucard.views;
+      delete menucard.createdAt;
       const updateDoc = { $set: menucard};
       const result = await dbcoll.getCollection().updateOne(query, updateDoc, options);
       if (result.modifiedCount > 0)

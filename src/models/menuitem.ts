@@ -116,6 +116,7 @@ export class MenuItemDataStore {
 
     async  addMenuItem(menuItem: MenuItem): Promise<MenuItem> {
         try {
+          menuItem.createdAt = new Date(); // server-owned, never trust a client value
           const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
           const result = await dbcoll.getCollection().insertOne(menuItem);
           logger.debug(`A document was inserted with the _id: ${result.insertedId}`);
@@ -197,6 +198,7 @@ export class MenuItemDataStore {
       const options = { upsert: true };
       const dbcoll = new DBCollection(MONGODB_DB_NAME, COLLNAME);
       delete menuItem._id;
+      delete menuItem.createdAt; // the UI sends the whole item back; keep the original creation time
       const updateDoc = { $set: menuItem};
       const result = await dbcoll.getCollection().updateOne(query, updateDoc, options);
       if (result.modifiedCount > 0)

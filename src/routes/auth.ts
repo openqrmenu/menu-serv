@@ -10,13 +10,21 @@ import logger from "../util/logger";
 import { body, validationResult, ValidationError, Result } from "express-validator";
 import { validationErrorMsg } from "../util/validation";
 import  mailer from "../util/mailer";
+import { normalizeEmail } from "../util/email";
+import { loginLimiter, signupLimiter, resetLimiter } from "../util/ratelimit";
 
 import { FROM_EMAIL, OTP_JWT_SECRET, APP_URL } from "../util/secrets";
 
 const router = express.Router();
 
-router.post("/login/password", 
-    body("email").trim().escape().isEmail(), 
+// Reset tokens are signed with the user's current password hash mixed in, see /initresetpassword.
+function resetSecret(user: UserObject): string
+{
+  return OTP_JWT_SECRET + (user.hash_password || "");
+}
+
+router.post("/login/password", loginLimiter,
+    body("email").customSanitizer(normalizeEmail).isEmail(),
     body("password").trim().notEmpty(), function(req, res, next) {
   const result = validationResult(req);
   if (!result.isEmpty()) {
@@ -64,8 +72,7 @@ router.post("/login/token", body("token").isJWT(), function(req, res, next) {
       return res.redirect(APP_URL);
     }
 
-    logger.debug("Found User for Login with Token:");
-    logger.debug(user);  
+    logger.debug("Found User for Login with Token");
     req.logIn(user, function(err) {
       if (err) { return next(err); }
       return res.status(200).json(
@@ -113,8 +120,8 @@ router.post("/logout", function (req: Request, res: Response, next: NextFunction
     });
 });
 
-router.post("/initresetpassword", 
-body("email").trim().notEmpty().isEmail(), 
+router.post("/initresetpassword", resetLimiter,
+body("email").customSanitizer(normalizeEmail).notEmpty().isEmail(),
 async function (req, res, next) {
   const result = validationResult(req);
   if (!result.isEmpty()) {
@@ -124,23 +131,22 @@ async function (req, res, next) {
   const email = req.body.email;
   const uds: UserDataStore = new UserDataStore();
   const existinguser: UserObject = await uds.findByEmail(email);
-  if (existinguser === null || existinguser.hash_password === "")
+  if (existinguser === null)
   {
     return res.status(200).json(new Status(true,"If account exists, further instructions have been emailed. Make sure to check your spam folder."));
   }
 
-  // Generate JWT token
+  // Generate JWT token. It is signed with the user's current password hash mixed into the secret,
+  // so it stops working as soon as the password is changed (single use) and can't be replayed
+  // as a login token at /login/token, which verifies with the plain secret.
   const payload =  { exp: Math.floor(Date.now() / 1000) + (10 * 60 * 60), data: existinguser._id, operation: "resetpw"};
-  const token = jwt.sign(payload, OTP_JWT_SECRET);
+  const token = jwt.sign(payload, resetSecret(existinguser));
 
-  console.log("JWT for Reset is " + token);
-  
   const text = "You or someone requested a password reset at Open QR Menu. Please copy the following link to your browser to reset."
   + "If you didn't request this password request, you can safely ignore this message."
   + "\r\n\r\n"
   + APP_URL + "/app#/util/resetpw?token=" + token;
 
-  console.log(text);
   const mailOptions = {
     from: FROM_EMAIL,
     to: existinguser.email,
@@ -173,26 +179,29 @@ async function (req, res, next) {
   const token = req.body.token;
   const password = req.body.password;
   const hashedpassword = bcrypt.hashSync(password, 10);
-  
-  jwt.verify(token, OTP_JWT_SECRET, async function (err: any, decoded: any)
+
+  // Peek at the (still unverified) token to find the user whose password hash is part of the secret.
+  const unverified: any = jwt.decode(token);
+  if (!unverified || unverified.operation != "resetpw" ||
+      typeof unverified.data !== "string" || !/^[0-9a-f]{24}$/i.test(unverified.data))
+  {
+    logger.error("Bad JWT for reset");
+    return res.status(400).json(new Status(true,"Failed to reset password, Bad Request"));
+  }
+
+  const uds: UserDataStore = new UserDataStore();
+  const user: UserObject = await uds.findById(unverified.data);
+  if (user === null || !user._id)
+  {
+    logger.debug("Cannot Find User ");
+    return res.status(400).json(new Status(true,"Failed to reset password, Bad Request"));
+  }
+
+  jwt.verify(token, resetSecret(user), async function (err: any, decoded: any)
   {
     if (err)
     {
       logger.error(err);
-      return res.status(400).json(new Status(true,"Failed to reset password, Bad Request"));
-    }
-    if (decoded.operation != "resetpw")
-    {
-      logger.error("Bad JWT Operation for reset " + decoded.operation);
-      return res.status(400).json(new Status(true,"Failed to reset password, Bad Request"));
-    }
-
-
-    const uds: UserDataStore = new UserDataStore();
-    const user: UserObject = await uds.findById(decoded.data);
-    if (user === null)
-    {
-      logger.debug("Cannot Find User ");  
       return res.status(400).json(new Status(true,"Failed to reset password, Bad Request"));
     }
 
@@ -217,8 +226,8 @@ async function (req, res, next) {
 });
 
 
-router.post("/signup", 
-body("email").trim().escape().isEmail(), 
+router.post("/signup", signupLimiter,
+body("email").customSanitizer(normalizeEmail).isEmail(),
 body("password").trim().notEmpty(), 
 async function (req, res, next) {
   const result = validationResult(req);

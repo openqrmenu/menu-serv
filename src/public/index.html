@@ -124,6 +124,18 @@
               <a href="app" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Get started</a>
               <a href="https://goqrmenu.com/app/#/public/64f8bbe0012e272f6425ab8a" class="text-sm font-semibold leading-6 text-gray-900">See Example Menu <span aria-hidden="true">→</span></a>
             </div>
+
+            <!-- Public usage counters, filled in from /public/stats; stays hidden if the request fails -->
+            <dl id="oqm-stats" class="mt-12 flex items-center justify-center gap-x-10 sm:gap-x-16" style="display:none">
+              <div>
+                <dt class="text-sm leading-6 text-gray-600">Users</dt>
+                <dd id="oqm-stat-users" class="text-3xl font-bold tracking-tight text-gray-900">0</dd>
+              </div>
+              <div>
+                <dt class="text-sm leading-6 text-gray-600">Menu items created</dt>
+                <dd id="oqm-stat-items" class="text-3xl font-bold tracking-tight text-gray-900">0</dd>
+              </div>
+            </dl>
           </div>
           <div class="mt-16 flow-root sm:mt-24">
             <div class="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
@@ -137,6 +149,30 @@
       </div>
     </div>
   </div>
+
+  <!-- =========================================================
+  CROSS-LINK: CATERING ORDER MANAGEMENT DISCOVERY
+  ========================================================= -->
+  <style>
+    #oqm-catering-discovery{font-family:inherit;background:#fff;padding:0 1.5rem 2rem}
+    #oqm-catering-discovery *{box-sizing:border-box}
+    #oqm-catering-discovery .oqm-catering-discovery__inner{max-width:80rem;margin:0 auto;padding:1.15rem 1.35rem;border:1px solid #dfe7e1;border-radius:1rem;background:linear-gradient(105deg,#f4faf5 0%,#fff 60%);display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
+    #oqm-catering-discovery .oqm-catering-discovery__copy{display:flex;align-items:center;gap:1rem;color:#374151;font-size:.95rem;line-height:1.5}
+    #oqm-catering-discovery .oqm-catering-discovery__mark{flex:0 0 auto;width:2.5rem;height:2.5rem;border-radius:.75rem;background:#007C23;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:800}
+    #oqm-catering-discovery strong{display:block;margin-bottom:.1rem;color:#1f2937;font-size:1rem}
+    #oqm-catering-discovery a{flex:0 0 auto;color:#007C23;font-size:.9rem;font-weight:700;text-decoration:none}
+    #oqm-catering-discovery a:hover{text-decoration:underline}
+    @media(max-width:700px){#oqm-catering-discovery .oqm-catering-discovery__inner{align-items:flex-start;flex-direction:column}#oqm-catering-discovery a{padding-left:3.5rem}}
+  </style>
+  <aside id="oqm-catering-discovery" aria-label="Catering Order Management from AnyDB">
+    <div class="oqm-catering-discovery__inner">
+      <div class="oqm-catering-discovery__copy">
+        <div class="oqm-catering-discovery__mark">C</div>
+        <div><strong>Need more than an online menu?</strong>Manage catering orders, event details, preparation, delivery and payments with AnyDB.</div>
+      </div>
+      <a href="https://www.anydb.com/catering-order-management/">Explore Catering Order Management <span aria-hidden="true">→</span></a>
+    </div>
+  </aside>
 
   <!-- SECTION -->
 
@@ -328,9 +364,43 @@
     </div>
   </div>
 
-  <!-- SECTION -->
+  <!-- =========================================================
+  CROSS-LINK: CATERING OPERATIONS
+  ========================================================= -->
+  <style>
+    #oqm-catering-operations{font-family:inherit;padding:6rem 1.5rem;background:#f8faf8}
+    #oqm-catering-operations *{box-sizing:border-box}
+    #oqm-catering-operations .oqm-catering-operations__inner{position:relative;overflow:hidden;max-width:72rem;margin:0 auto;padding:3.5rem;border-radius:1.5rem;background:#17251d;color:#fff;display:grid;grid-template-columns:1.1fr .9fr;gap:3.5rem;align-items:center;box-shadow:0 1.5rem 3.5rem rgba(23,37,29,.12)}
+    #oqm-catering-operations .oqm-catering-operations__inner:after{content:'';position:absolute;right:-7rem;top:-8rem;width:22rem;height:22rem;border-radius:50%;background:rgba(0,124,35,.22)}
+    #oqm-catering-operations .oqm-catering-operations__content{position:relative;z-index:1}
+    #oqm-catering-operations .oqm-catering-operations__eyebrow{margin-bottom:.85rem;color:#75dc91;font-size:.78rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+    #oqm-catering-operations h2{margin:0 0 1rem;color:#fff;font-size:2.15rem;line-height:1.18;font-weight:750;letter-spacing:-.02em}
+    #oqm-catering-operations p{margin:0 0 1.6rem;color:#c5d0c9;font-size:1.05rem;line-height:1.7}
+    #oqm-catering-operations .oqm-catering-operations__button{display:inline-flex;align-items:center;justify-content:center;min-height:2.8rem;padding:0 1.15rem;border-radius:.45rem;background:#fff;color:#007C23;font-size:.9rem;font-weight:750;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease}
+    #oqm-catering-operations .oqm-catering-operations__button:hover{transform:translateY(-2px);box-shadow:0 .7rem 1.4rem rgba(0,0,0,.18)}
+    #oqm-catering-operations .oqm-catering-operations__flow{position:relative;z-index:1;display:grid;gap:.65rem}
+    #oqm-catering-operations .oqm-catering-operations__step{display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid rgba(255,255,255,.12);border-radius:.7rem;background:rgba(255,255,255,.06);color:#edf3ef;font-size:.9rem;font-weight:650}
+    #oqm-catering-operations .oqm-catering-operations__num{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:1.65rem;height:1.65rem;border-radius:50%;background:#007C23;color:#fff;font-size:.7rem;font-weight:800}
+    @media(max-width:800px){#oqm-catering-operations{padding:4rem 1.25rem}#oqm-catering-operations .oqm-catering-operations__inner{grid-template-columns:1fr;padding:2.25rem;gap:2.25rem}#oqm-catering-operations h2{font-size:1.8rem}}
+  </style>
+  <section id="oqm-catering-operations">
+    <div class="oqm-catering-operations__inner">
+      <div class="oqm-catering-operations__content">
+        <div class="oqm-catering-operations__eyebrow">For restaurants that cater</div>
+        <h2>Your menu is online. Now connect the work behind every catering order.</h2>
+        <p>AnyDB Catering Order Management keeps customers, event details, menu selections, pricing, preparation tasks, delivery and payments together from inquiry through completion.</p>
+        <a class="oqm-catering-operations__button" href="https://www.anydb.com/catering-order-management/">Explore the Free Catering Solution <span aria-hidden="true">&nbsp;→</span></a>
+      </div>
+      <div class="oqm-catering-operations__flow" aria-label="Catering order workflow">
+        <div class="oqm-catering-operations__step"><span class="oqm-catering-operations__num">1</span>Inquiry and event details</div>
+        <div class="oqm-catering-operations__step"><span class="oqm-catering-operations__num">2</span>Menu, services and quote</div>
+        <div class="oqm-catering-operations__step"><span class="oqm-catering-operations__num">3</span>Preparation and delivery</div>
+        <div class="oqm-catering-operations__step"><span class="oqm-catering-operations__num">4</span>Completion and payment</div>
+      </div>
+    </div>
+  </section>
 
-    
+  <!-- SECTION -->
 
     <div class="bg-white">
         <div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
@@ -373,5 +443,32 @@
 
 
 
+  <script>
+    (function () {
+      var box = document.getElementById("oqm-stats");
+      if (!box || !window.fetch) return;
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function show(el, target) {
+        if (reduce || target < 50) { el.textContent = target.toLocaleString(); return; }
+        var start = null;
+        function step(ts) {
+          if (start === null) start = ts;
+          var p = Math.min((ts - start) / 900, 1);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))).toLocaleString();
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+      fetch("public/stats")
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (s) {
+          if (!s || typeof s.users !== "number" || typeof s.items !== "number") return;
+          box.style.display = "";
+          show(document.getElementById("oqm-stat-users"), s.users);
+          show(document.getElementById("oqm-stat-items"), s.items);
+        })
+        .catch(function () { /* keep the counters hidden */ });
+    })();
+  </script>
 </body>
 </html>

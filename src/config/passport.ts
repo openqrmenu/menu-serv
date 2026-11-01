@@ -9,6 +9,7 @@ import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, SERVER_URL } from "../
 import { Request, Response, NextFunction } from "express";
 import { UserDataStore, UserObject } from "../models/user";
 import bcrypt from "bcrypt";
+import { normalizeEmail } from "../util/email";
 
 
 /* Configure password authentication strategy.
@@ -25,16 +26,21 @@ import bcrypt from "bcrypt";
 const LocalStrategy = passportLocal.Strategy;
 passport.use(
   new LocalStrategy({usernameField: "email", passwordField: "password"}, async function verify(email, password, cb) {
-    const uds: UserDataStore = new UserDataStore();
-    const user: UserObject = await uds.findByEmail(email);
-    if (user === null)
+    try {
+      const uds: UserDataStore = new UserDataStore();
+      const user: UserObject = await uds.findByEmail(email);
+      // Google-only accounts have no password hash; bcrypt would throw on undefined
+      if (user === null || !user.hash_password)
+        return cb(null, false, { message: "Incorrect username or password" });
+
+      if (bcrypt.compareSync(password, user.hash_password)) {
+        return cb(null, user);
+      }
+
       return cb(null, false, { message: "Incorrect username or password" });
-
-    if (bcrypt.compareSync(password, user.hash_password)) {
-      return cb(null, user);
+    } catch (err) {
+      return cb(err);
     }
-
-    return cb(null, false, { message: "Incorrect username or password" });
   })
 );
 
@@ -49,14 +55,13 @@ passport.use(new GoogleStrategy({
 async function(accessToken, refreshToken, profile, cb) {
     // get profile details
     // save profile details in db
-    logger.debug(profile);
     const uds: UserDataStore = new UserDataStore();
     const user: UserObject = await uds.findByGoogleID(profile.id);
     if (user === null)
     {
       // User doesn't exist, create a new one
       const user = new UserObject({
-        email: profile.emails?.[0].value,
+        email: normalizeEmail(profile.emails?.[0].value),
         googleID: profile.id,
       });
       

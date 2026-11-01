@@ -9,6 +9,7 @@ import morgan from "morgan";
 import createMemoryStore from "memorystore";
 import MongoStore from "connect-mongo";
 import cors from "cors";
+import helmet from "helmet";
 
 import cookieparser from "cookie-parser";
 import { SESSION_SECRET, MONGODB_URI, MONGODB_DB_NAME, ISPRODUCTION, OTP_JWT_SECRET, APP_URL } from "./util/secrets";
@@ -43,6 +44,15 @@ const uds = new UserDataStore();
 const MemoryStore = createMemoryStore(session);
 
 // Express configuration
+// Baseline security headers. CSP, frame and cross-origin policies are left off on purpose:
+// the Vue app and the public menu pages (which restaurants may embed) rely on them being open.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  frameguard: false,
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  hsts: { maxAge: 15552000, includeSubDomains: false }
+}));
 app.use(morgan("dev", { stream: {
         write: (message) => logger.debug(message.trim())
     }
@@ -64,6 +74,9 @@ app.use(session({
     saveUninitialized: false,
     secret: SESSION_SECRET,
     cookie : {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: ISPRODUCTION // production serves https directly; dev runs over plain http
     },
     store:  MongoStore.create( { mongoUrl: MONGODB_URI, dbName: MONGODB_DB_NAME}  )
 }));

@@ -56,8 +56,6 @@ async function (req, res)
     return res.status(400).json(new Status(false, validationErrorMsg(result)));
   }
 
-  console.log(req.body);
-
   const myuser: User = req.user as User;
   const userid = new ObjectId(myuser.id);
 
@@ -66,7 +64,6 @@ async function (req, res)
   menuItem._id = new ObjectId(menuItem._id as string);
   menuItem.enabled = (req.body.enabled == "true") ? true : false;
 
-  console.log(menuItem);
   const mids: MenuItemDataStore = new MenuItemDataStore();
 
   mids.updateMenuItem(menuItem);

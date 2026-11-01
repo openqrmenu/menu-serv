@@ -6,8 +6,6 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 
-import { scheduleCron } from "./util/cron";
-
 
 
 /**
@@ -49,7 +47,5 @@ else
         console.log("  Press CTRL-C to stop\n");
     });
 }
-
-scheduleCron();
 
 //export default server;
